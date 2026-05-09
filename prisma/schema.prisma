@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  admin
+  staff
+}
+
+enum ProjectStatus {
+  draft
+  quoted
+  accepted
+  rejected
+  completed
+}
+
+enum Complexity {
+  standard
+  complex
+  bespoke
+}
+
+enum UnitType {
+  kg
+  metre
+  piece
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         Role      @default(staff)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz
+
+  projects         Project[]
+  quotations       Quotation[]
+  updatedMaterials Material[]  @relation("UpdatedBy")
+
+  @@index([email])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Customer {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz
+
+  projects Project[]
+
+  @@index([name])
+  @@index([deletedAt])
+  @@map("customers")
+}
+
+model Material {
+  id               String    @id @default(uuid()) @db.Uuid
+  name             String
+  unitType         UnitType  @map("unit_type")
+  pricePerUnitKobo Int       @map("price_per_unit_kobo")
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz
+  updatedById      String?   @map("updated_by_id") @db.Uuid
+
+  updatedBy        User?             @relation("UpdatedBy", fields: [updatedById], references: [id])
+  projectMaterials ProjectMaterial[]
+
+  @@index([deletedAt])
+  @@map("materials")
+}
+
+model Project {
+  id                String        @id @default(uuid()) @db.Uuid
+  customerId        String        @map("customer_id") @db.Uuid
+  createdById       String        @map("created_by_id") @db.Uuid
+  projectType       String        @map("project_type")
+  dimensionsMm      Json          @map("dimensions_mm")
+  complexity        Complexity    @default(standard)
+  designImageUrl    String?       @map("design_image_url")
+  labourCostKobo    Int           @map("labour_cost_kobo")
+  transportCostKobo Int           @map("transport_cost_kobo")
+  profitMarginPct   Int           @default(20) @map("profit_margin_pct")
+  totalCostKobo     Int           @map("total_cost_kobo")
+  status            ProjectStatus @default(draft)
+  notes             String?
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt         DateTime?     @map("deleted_at") @db.Timestamptz
+
+  customer   Customer          @relation(fields: [customerId], references: [id])
+  createdBy  User              @relation(fields: [createdById], references: [id])
+  materials  ProjectMaterial[]
+  quotations Quotation[]
+
+  @@index([customerId])
+  @@index([createdById])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([createdAt(sort: Desc)])
+  @@map("projects")
+}
+
+model ProjectMaterial {
+  id           String  @id @default(uuid()) @db.Uuid
+  projectId    String  @map("project_id") @db.Uuid
+  materialId   String  @map("material_id") @db.Uuid
+  quantity     Decimal @db.Decimal(10, 3)
+  unitCostKobo Int     @map("unit_cost_kobo")
+
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  material Material @relation(fields: [materialId], references: [id])
+
+  @@index([projectId])
+  @@map("project_materials")
+}
+
+model Quotation {
+  id              String    @id @default(uuid()) @db.Uuid
+  projectId       String    @map("project_id") @db.Uuid
+  createdById     String    @map("created_by_id") @db.Uuid
+  reference       String    @unique
+  totalAmountKobo Int       @map("total_amount_kobo")
+  pdfUrl          String?   @map("pdf_url")
+  emailedAt       DateTime? @map("emailed_at") @db.Timestamptz
+  validUntil      DateTime  @map("valid_until") @db.Date
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  project   Project @relation(fields: [projectId], references: [id])
+  createdBy User    @relation(fields: [createdById], references: [id])
+
+  @@index([projectId])
+  @@index([reference])
+  @@index([createdAt(sort: Desc)])
+  @@map("quotations")
+}
