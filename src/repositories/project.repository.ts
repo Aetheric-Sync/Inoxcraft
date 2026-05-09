@@ -38,12 +38,12 @@ export const projectRepository = {
     projectType: string;
     dimensionsMm: { l: number; w: number; h: number };
     complexity: Complexity;
-    designImageUrl?: string;
+    designImageUrl?: string | null | undefined;
     labourCostKobo: number;
     transportCostKobo: number;
     profitMarginPct: number;
     totalCostKobo: number;
-    notes?: string;
+    notes?: string | null | undefined;
     materials: Array<{
       materialId: string;
       quantity: number;

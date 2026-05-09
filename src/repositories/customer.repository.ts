@@ -43,13 +43,33 @@ export const customerRepository = {
       orderBy: { name: "asc" },
     }),
 
-  create: (data: { name: string; phone?: string; email?: string; address?: string }) =>
-    db.customer.create({ data }),
+  create: (data: {
+    name: string;
+    phone?: string | null | undefined;
+    email?: string | null | undefined;
+    address?: string | null | undefined;
+  }) =>
+    db.customer.create({
+      data: {
+        name: data.name,
+        phone: data.phone ?? null,
+        email: data.email ?? null,
+        address: data.address ?? null,
+      },
+    }),
 
   update: (
     id: string,
-    data: Partial<{ name: string; phone: string; email: string; address: string }>,
-  ) => db.customer.update({ where: { id }, data }),
+    data: Partial<{
+      name: string | undefined;
+      phone: string | null | undefined;
+      email: string | null | undefined;
+      address: string | null | undefined;
+    }>,
+  ) => {
+    const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+    return db.customer.update({ where: { id }, data: cleanData });
+  },
 
   softDelete: (id: string) =>
     db.customer.update({ where: { id }, data: { deletedAt: new Date() } }),

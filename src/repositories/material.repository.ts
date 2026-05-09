@@ -20,9 +20,15 @@ export const materialRepository = {
 
   update: (
     id: string,
-    data: Partial<{ name: string; pricePerUnitKobo: number }>,
+    data: Partial<{ name: string | undefined; pricePerUnitKobo: number | undefined }>,
     updatedById: string,
-  ) => db.material.update({ where: { id }, data: { ...data, updatedById } }),
+  ) => {
+    const cleanData = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+    return db.material.update({
+      where: { id },
+      data: { ...cleanData, updatedById },
+    });
+  },
 
   softDelete: (id: string) =>
     db.material.update({ where: { id }, data: { deletedAt: new Date() } }),
