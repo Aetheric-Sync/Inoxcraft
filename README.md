@@ -1,7 +1,9 @@
 # INOXCRAFT
+
 Web-based quotation and project management system for stainless steel fabrication.
 
 ## Stack
+
 - Next.js 14 (App Router)
 - TypeScript (strict mode)
 - PostgreSQL (Neon) via Prisma ORM
@@ -13,6 +15,7 @@ Web-based quotation and project management system for stainless steel fabricatio
 - Upstash Redis (rate limiting)
 
 ## Getting started
+
 1. Copy .env.example to .env.local and fill in all values
 2. Run: npm install
 3. Run: npx prisma migrate dev
