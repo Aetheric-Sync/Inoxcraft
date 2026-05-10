@@ -1,10 +1,14 @@
-export type Role = "admin" | "staff";
+import { 
+  type Role as PrismaRole, 
+  type ProjectStatus as PrismaProjectStatus, 
+  type Complexity as PrismaComplexity, 
+  type UnitType as PrismaUnitType 
+} from "@prisma/client";
 
-export type ProjectStatus = "draft" | "quoted" | "accepted" | "rejected" | "completed";
-
-export type Complexity = "standard" | "complex" | "bespoke";
-
-export type UnitType = "kg" | "metre" | "piece";
+export type Role = "admin" | "staff"; // Keeping as string literals for frontend convenience if needed, but the types below are better
+export type ProjectStatus = PrismaProjectStatus;
+export type Complexity = PrismaComplexity;
+export type UnitType = PrismaUnitType;
 
 export interface ApiResponse<T = void> {
   success: boolean;
