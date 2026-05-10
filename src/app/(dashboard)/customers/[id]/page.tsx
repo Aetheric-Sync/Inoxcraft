@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Phone, Mail, MapPin, ArrowLeft } from "lucide-react";
+import { Phone, Mail, MapPin, ArrowLeft, Eye } from "lucide-react";
 
 import { requireSession } from "@/lib/session";
 import { customerRepository } from "@/repositories/customer.repository";
@@ -48,7 +48,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button render={<Link href="/customers" />} variant="ghost" size="sm">
+        <Button render={<Link href="/customers" />} nativeButton={false} variant="ghost" size="sm">
           <ArrowLeft className="mr-1 h-4 w-4" />
           Customers
         </Button>
@@ -159,10 +159,12 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                     <TableCell className="text-right">
                       <Button
                         render={<Link href={`/projects/${project.id}`} />}
+                        nativeButton={false}
                         variant="ghost"
-                        size="sm"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-inox-600"
                       >
-                        View
+                        <Eye className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>

@@ -118,6 +118,7 @@ export default async function QuotationsPage() {
               <div className="flex items-center justify-end gap-1">
                 <Button
                   render={<Link href={`/quotations/${row.id}`} />}
+                  nativeButton={false}
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-muted-foreground transition-colors hover:text-inox-600"

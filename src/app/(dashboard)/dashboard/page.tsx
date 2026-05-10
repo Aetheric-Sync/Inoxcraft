@@ -34,6 +34,7 @@ export default async function DashboardPage() {
         action={
           <Button
             render={<Link href="/projects/new" />}
+            nativeButton={false}
             className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98]"
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -107,6 +108,7 @@ export default async function DashboardPage() {
             </p>
             <Button
               render={<Link href="/projects/new" />}
+              nativeButton={false}
               size="sm"
               className="mt-4 bg-inox-600 text-white hover:bg-inox-700 transition-all duration-200 active:scale-[0.98]"
             >

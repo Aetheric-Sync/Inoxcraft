@@ -47,6 +47,7 @@ export default async function ProjectsPage({
         action={
           <Button
             render={<Link href="/projects/new" />}
+            nativeButton={false}
             className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98]"
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -159,6 +160,7 @@ export default async function ProjectsPage({
               <div className="flex items-center justify-end gap-2">
                 <Button
                   render={<Link href={`/projects/${row.id}`} />}
+                  nativeButton={false}
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-muted-foreground transition-colors hover:text-inox-600"
