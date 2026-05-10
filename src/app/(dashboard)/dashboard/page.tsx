@@ -47,28 +47,28 @@ export default async function DashboardPage() {
         <StatsCard
           label="Total Projects"
           value={stats.totalProjects}
-          icon={FolderOpen}
+          icon="projects"
           animateCount
           description="All time"
         />
         <StatsCard
           label="Total Revenue"
           value={stats.totalRevenueKobo === 0 ? "₦0" : formatNairaCompact(stats.totalRevenueKobo)}
-          icon={TrendingUp}
+          icon="revenue"
           description="Accepted & completed jobs"
           iconColor="text-emerald-600"
         />
         <StatsCard
           label="Jobs This Month"
           value={stats.monthProjects}
-          icon={BarChart2}
+          icon="month"
           animateCount
           description={new Date().toLocaleString("default", { month: "long", year: "numeric" })}
         />
         <StatsCard
           label="Avg. Job Value"
           value={stats.avgJobValueKobo === 0 ? "₦0" : formatNairaCompact(stats.avgJobValueKobo)}
-          icon={Users}
+          icon="users"
           description="Per completed project"
           iconColor="text-purple-600"
         />

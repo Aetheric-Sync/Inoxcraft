@@ -2,8 +2,7 @@
 
 import { useInView } from "react-intersection-observer";
 import CountUp from "react-countup";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, FolderOpen, BarChart2, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils/cn";
 
@@ -14,12 +13,19 @@ interface StatsCardProps {
   suffix?:     string;
   delta?:      string;
   deltaType?:  "positive" | "negative" | "neutral";
-  icon:        LucideIcon;
+  icon:        "projects" | "revenue" | "month" | "users";
   iconColor?:  string;
   description?: string;
   animateCount?: boolean;
   countFrom?:  number;
 }
+
+const ICON_MAP = {
+  projects: FolderOpen,
+  revenue: TrendingUp,
+  month: BarChart2,
+  users: Users,
+};
 
 export function StatsCard({
   label,
@@ -28,13 +34,14 @@ export function StatsCard({
   suffix,
   delta,
   deltaType = "neutral",
-  icon: Icon,
+  icon,
   iconColor = "text-inox-600",
   description,
   animateCount = false,
   countFrom = 0,
 }: StatsCardProps) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
+  const Icon = ICON_MAP[icon];
 
   const DeltaIcon =
     deltaType === "positive"
