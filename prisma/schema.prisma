@@ -32,6 +32,8 @@ enum UnitType {
   kg
   metre
   piece
+  litre
+  sqmetre
 }
 
 model User {

@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils/cn";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
-  unitType: z.enum(["piece", "metre", "kilogram", "litre", "sqmetre"] as const),
+  unitType: z.enum(["piece", "metre", "kg", "litre", "sqmetre"] as const),
   pricePerUnitKobo: z.coerce.number().int().positive("Price must be positive"),
 });
 type FormData = z.infer<typeof schema>;
@@ -108,9 +108,9 @@ function MaterialForm({
             <SelectValue placeholder="Select unit" />
           </SelectTrigger>
           <SelectContent>
-            {["piece", "metre", "kilogram", "litre", "sqmetre"].map((u) => (
+            {["piece", "metre", "kg", "litre", "sqmetre"].map((u) => (
               <SelectItem key={u} value={u} className="capitalize">
-                {u}
+                {u === "kg" ? "kilogram" : u}
               </SelectItem>
             ))}
           </SelectContent>
@@ -237,20 +237,20 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
             key: "unit",
             header: "Unit Type",
             cell: (row) => {
-              const dotColor =
-                row.unitType === "kilogram"
-                  ? "bg-blue-400"
-                  : row.unitType === "metre"
-                  ? "bg-purple-400"
-                  : "bg-amber-400";
-              return (
-                <div className="flex items-center gap-1.5">
-                  <span className={cn("h-1.5 w-1.5 rounded-full", dotColor)} />
-                  <span className="capitalize text-muted-foreground">
-                    {row.unitType}
-                  </span>
-                </div>
-              );
+                  const dotColor =
+                    row.unitType === "kg"
+                      ? "bg-blue-400"
+                      : row.unitType === "metre"
+                      ? "bg-purple-400"
+                      : "bg-amber-400";
+                  return (
+                    <div className="flex items-center gap-1.5">
+                      <span className={cn("h-1.5 w-1.5 rounded-full", dotColor)} />
+                      <span className="capitalize text-muted-foreground">
+                        {row.unitType === "kg" ? "kilogram" : row.unitType}
+                      </span>
+                    </div>
+                  );
             },
           },
           {
