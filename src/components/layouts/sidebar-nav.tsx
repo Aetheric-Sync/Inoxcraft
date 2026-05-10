@@ -1,4 +1,6 @@
+import React from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import { LayoutDashboard, Briefcase, FileText, Users, Settings, Menu } from "lucide-react";
 
 import { auth } from "@/lib/auth";
@@ -7,7 +9,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 
 import { UserNav } from "./user-nav";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: {
+  label: string;
+  href: Route;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Projects", href: "/projects", icon: Briefcase },
   { label: "Quotations", href: "/quotations", icon: FileText },
@@ -27,7 +33,7 @@ function NavLinks({ role }: { role: string }) {
         </Link>
       ))}
       {role === "admin" && (
-        <Link href="/admin/materials" className={cn(NAV_LINK_CLASS)}>
+        <Link href={"/admin/materials"} className={cn(NAV_LINK_CLASS)}>
           <Settings className="h-5 w-5 shrink-0" />
           Admin
         </Link>
@@ -48,7 +54,7 @@ export async function SidebarNav() {
       {/* Desktop Sidebar */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r bg-white lg:flex">
         <div className="border-b p-6">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href={"/dashboard"} className="flex items-center gap-2">
             <span className="text-inox-600 text-lg leading-tight font-bold tracking-tight">
               HAKEEM&apos;S
               <br />
@@ -74,7 +80,7 @@ export async function SidebarNav() {
               <SheetTitle>Navigation Menu</SheetTitle>
             </SheetHeader>
             <div className="border-b p-6">
-              <Link href="/dashboard">
+              <Link href={"/dashboard"}>
                 <span className="text-inox-600 text-lg leading-tight font-bold tracking-tight">
                   HAKEEM&apos;S
                   <br />

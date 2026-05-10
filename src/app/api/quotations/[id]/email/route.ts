@@ -9,8 +9,8 @@ import { QuotationPDF } from "@/components/features/quotations/quotation-pdf";
 import { ok, badRequest, notFound, serverError } from "@/lib/api-response";
 import { formatNaira } from "@/lib/utils/money";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
 
   return withAuth(req, async () => {
     try {
@@ -23,10 +23,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         );
       }
 
-      const pdfElement = React.createElement(QuotationPDF, {
-        quotation: quotation as unknown as QuotationWithFullDetails,
-      });
-      const pdfBuffer = await renderToBuffer(pdfElement as React.ReactElement);
+      const pdfElement = React.createElement(QuotationPDF, { quotation: quotation });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pdfBuffer = await renderToBuffer(pdfElement as React.ReactElement<any>);
 
       await sendQuotationEmail({
         to: quotation.project.customer.email,
