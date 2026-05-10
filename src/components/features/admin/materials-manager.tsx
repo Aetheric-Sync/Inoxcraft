@@ -101,7 +101,7 @@ function MaterialForm({
         <Select
           defaultValue={defaultValues?.unitType}
           onValueChange={(v) => {
-            if (v) setValue("unitType", v as FormData["unitType"]);
+            if (v) setValue("unitType", v);
           }}
         >
           <SelectTrigger className="transition-shadow focus:shadow-glow">

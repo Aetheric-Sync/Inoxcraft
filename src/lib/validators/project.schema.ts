@@ -3,7 +3,6 @@ import { z } from "zod";
 export const materialLineSchema = z.object({
   materialId: z.string().uuid("Invalid material ID"),
   quantity: z.number().positive("Quantity must be positive"),
-  unitCostKobo: z.number().int().positive("Unit cost must be a positive integer"),
 });
 
 export const createProjectSchema = z.object({

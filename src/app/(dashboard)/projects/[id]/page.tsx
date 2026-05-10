@@ -57,7 +57,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               </p>
             </div>
             <div className="flex-shrink-0">
-              <StatusBadge status={project.status as ProjectStatus} />
+              <StatusBadge status={project.status} />
             </div>
           </div>
 

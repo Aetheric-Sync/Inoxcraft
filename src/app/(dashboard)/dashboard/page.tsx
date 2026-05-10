@@ -54,7 +54,7 @@ export default async function DashboardPage() {
         />
         <StatsCard
           label="Total Revenue"
-          value={stats.totalRevenueKobo === 0 ? "₦0" : formatNairaCompact(stats.totalRevenueKobo)}
+          value={formatNaira(stats.totalRevenueKobo)}
           icon="revenue"
           description="Accepted & completed jobs"
           iconColor="text-emerald-600"
@@ -68,7 +68,7 @@ export default async function DashboardPage() {
         />
         <StatsCard
           label="Avg. Job Value"
-          value={stats.avgJobValueKobo === 0 ? "₦0" : formatNairaCompact(stats.avgJobValueKobo)}
+          value={formatNaira(stats.avgJobValueKobo)}
           icon="users"
           description="Per completed project"
           iconColor="text-purple-600"

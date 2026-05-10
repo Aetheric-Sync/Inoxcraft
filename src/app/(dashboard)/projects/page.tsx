@@ -136,7 +136,7 @@ export default async function ProjectsPage({
           {
             key: "status",
             header: "Status",
-            cell: (row) => <StatusBadge status={row.status as ProjectStatus} />,
+            cell: (row) => <StatusBadge status={row.status} />,
           },
           {
             key: "date",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -23,8 +23,16 @@ interface Props {
 export function ProjectStatusUpdater({ projectId, currentStatus }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [value, setValue] = useState(currentStatus);
+
+  // Sync local state with prop if it changes externally
+  useEffect(() => {
+    setValue(currentStatus);
+  }, [currentStatus]);
 
   const handleChange = async (status: string) => {
+    const previousStatus = value;
+    setValue(status);
     setLoading(true);
     try {
       const res = await fetch(`/api/projects/${projectId}`, {
@@ -35,12 +43,14 @@ export function ProjectStatusUpdater({ projectId, currentStatus }: Props) {
       if (!res.ok) {
         const err = await res.json();
         toast.error(err.error ?? "Failed to update status");
+        setValue(previousStatus); // Revert on failure
       } else {
         toast.success(`Status updated to ${status}`);
         router.refresh();
       }
     } catch {
       toast.error("Network error. Please try again.");
+      setValue(previousStatus); // Revert on failure
     } finally {
       setLoading(false);
     }
@@ -50,7 +60,7 @@ export function ProjectStatusUpdater({ projectId, currentStatus }: Props) {
     <div className="flex items-center gap-2">
       {loading && <Loader2 className="h-4 w-4 animate-spin text-slate-400" />}
       <Select
-        defaultValue={currentStatus}
+        value={value}
         onValueChange={(v) => {
           if (v) void handleChange(v);
         }}

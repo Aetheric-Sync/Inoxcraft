@@ -1,6 +1,7 @@
 import { requireSession } from "@/lib/session";
-import { SidebarNav } from "./sidebar-nav";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+
+import { SidebarNav } from "./sidebar-nav";
 
 export async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await requireSession();

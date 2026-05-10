@@ -138,14 +138,14 @@ export default function NewProjectPage() {
     }
     const res = await fetch(`/api/customers?search=${encodeURIComponent(q)}`);
     const data = await res.json();
-    setCustomers(data.items ?? []);
+    setCustomers(data.data?.items ?? []);
   };
 
   const loadMaterials = async () => {
     if (allMaterials.length > 0) return;
     const res = await fetch("/api/materials");
     const data = await res.json();
-    setAllMaterials(data.items ?? []);
+    setAllMaterials(data.data ?? []);
   };
 
   const createCustomer = async () => {
@@ -442,9 +442,9 @@ export default function NewProjectPage() {
                       <div className="space-y-1.5">
                         <Label>Complexity</Label>
                         <Select
-                          defaultValue="standard"
+                          value={complexity}
                           onValueChange={(v) => {
-                            if (v) setValue("complexity", v as FormData["complexity"]);
+                            if (v) setValue("complexity", v);
                           }}
                         >
                           <SelectTrigger className="bg-white dark:bg-neutral-900">
@@ -502,18 +502,23 @@ export default function NewProjectPage() {
                             <div className="flex-1 space-y-1.5">
                               <Label className="text-xs text-muted-foreground uppercase tracking-wider">Material</Label>
                               <Select
-                                value={watchedMaterials[idx]?.materialId}
+                                value={watchedMaterials[idx]?.materialId || ""}
                                 onValueChange={(v) => {
                                   if (v) setValue(`materials.${idx}.materialId`, v);
                                 }}
                               >
-                                <SelectTrigger className="border-0 shadow-none bg-muted/30 hover:bg-muted/50 focus:ring-0">
+                                <SelectTrigger className="w-full border-0 shadow-none bg-muted/30 hover:bg-muted/50 focus:ring-0">
                                   <SelectValue placeholder="Select material…" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {allMaterials.map((m: any) => (
                                     <SelectItem key={m.id} value={m.id}>
-                                      {m.name} ({m.unitType}) - {formatNaira(m.pricePerUnitKobo / 100)}/{m.unitType}
+                                      <div className="flex flex-col py-0.5">
+                                        <span className="font-medium">{m.name}</span>
+                                        <span className="text-[10px] text-muted-foreground uppercase tracking-tight">
+                                          {formatNaira(m.pricePerUnitKobo / 100)} / {m.unitType}
+                                        </span>
+                                      </div>
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
