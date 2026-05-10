@@ -5,22 +5,24 @@ import { ok, noContent, badRequest, forbidden, notFound, serverError } from "@/l
 import { materialRepository } from "@/repositories/material.repository";
 import { updateMaterialSchema } from "@/lib/validators/material.schema";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   return withAuth(req, async () => {
-    const material = await materialRepository.findById(params.id);
+    const material = await materialRepository.findById(id);
     if (!material) return notFound("Material not found");
     return ok(material);
   });
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   return withAuth(req, async (userId, role) => {
     if (role !== "admin") return forbidden();
     try {
       const body: unknown = await req.json();
       const parsed = updateMaterialSchema.safeParse(body);
       if (!parsed.success) return badRequest(parsed.error.issues[0]?.message ?? "Invalid input");
-      const material = await materialRepository.update(params.id, parsed.data, userId);
+      const material = await materialRepository.update(id, parsed.data, userId);
       return ok(material);
     } catch (e) {
       return serverError(e);
@@ -28,11 +30,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   });
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   return withAuth(req, async (_uid, role) => {
     if (role !== "admin") return forbidden();
     try {
-      await materialRepository.softDelete(params.id);
+      await materialRepository.softDelete(id);
       return noContent();
     } catch (e) {
       return serverError(e);
