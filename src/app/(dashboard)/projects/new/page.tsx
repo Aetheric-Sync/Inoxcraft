@@ -121,8 +121,8 @@ export default function NewProjectPage() {
   const dimensionW = useWatch({ control, name: "dimensionW" });
   const dimensionH = useWatch({ control, name: "dimensionH" });
 
-  const materialCostNaira = watchedMaterials.reduce((sum, line) => {
-    const mat = allMaterials.find((m) => m.id === line.materialId);
+  const materialCostNaira = watchedMaterials.reduce((sum: number, line: any) => {
+    const mat = allMaterials.find((m: any) => m.id === line.materialId);
     return sum + (mat ? (mat.pricePerUnitKobo / 100) * (line.quantity || 0) : 0);
   }, 0);
 
@@ -209,7 +209,7 @@ export default function NewProjectPage() {
           labourCostKobo: Math.round(data.labourCostNaira * 100),
           transportCostKobo: Math.round(data.transportCostNaira * 100),
           profitMarginPct: data.profitMarginPct,
-          materials: data.materials.map((m) => ({
+          materials: data.materials.map((m: any) => ({
             materialId: m.materialId,
             quantity: m.quantity,
           })),
@@ -242,7 +242,7 @@ export default function NewProjectPage() {
         <div className="relative mb-12">
           <div className="absolute top-1/2 left-0 w-full h-0.5 -translate-y-1/2 bg-muted/50 rounded-full" />
           <div className="relative flex justify-between">
-            {STEPS.map((s, i) => {
+            {STEPS.map((s: any, i: number) => {
               const Icon = s.icon;
               const isCompleted = i < step;
               const isActive = i === step;
@@ -317,7 +317,7 @@ export default function NewProjectPage() {
                       {customers.length > 0 && (
                         <Card className="max-h-40 overflow-y-auto border-border shadow-sm">
                           <div className="divide-y divide-border">
-                            {customers.map((c) => (
+                            {customers.map((c: any) => (
                               <div
                                 key={c.id}
                                 role="button"
@@ -434,7 +434,7 @@ export default function NewProjectPage() {
                           <div key={d} className="space-y-1.5">
                             <Label>{["Length", "Width", "Height"][i]} (mm)</Label>
                             <Input type="number" {...register(d)} className="bg-white dark:bg-neutral-900" />
-                            {errors[d] && <p className="text-xs text-destructive">{errors[d]?.message}</p>}
+                            {errors[d] && <p className="text-xs text-destructive">{(errors[d] as any)?.message}</p>}
                           </div>
                         ))}
                       </div>
@@ -491,7 +491,7 @@ export default function NewProjectPage() {
                     </div>
 
                     <div className="space-y-3">
-                      {fields.map((field, idx) => {
+                      {fields.map((field: any, idx: number) => {
                         const mat = allMaterials.find((m) => m.id === watchedMaterials[idx]?.materialId);
                         const lineTotal = mat
                           ? (mat.pricePerUnitKobo / 100) * (watchedMaterials[idx]?.quantity ?? 0)
@@ -511,7 +511,7 @@ export default function NewProjectPage() {
                                   <SelectValue placeholder="Select material…" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {allMaterials.map((m) => (
+                                  {allMaterials.map((m: any) => (
                                     <SelectItem key={m.id} value={m.id}>
                                       {m.name} ({m.unitType}) - {formatNaira(m.pricePerUnitKobo / 100)}/{m.unitType}
                                     </SelectItem>

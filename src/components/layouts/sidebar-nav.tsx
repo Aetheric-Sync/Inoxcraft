@@ -116,7 +116,7 @@ function SidebarContent({ onLinkClick, session }: { onLinkClick?: () => void; se
 
   const initials = session?.user?.name
     ?.split(" ")
-    .map((n) => n[0])
+    .map((n: any) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2) ?? "?";
@@ -143,7 +143,7 @@ function SidebarContent({ onLinkClick, session }: { onLinkClick?: () => void; se
         <div className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
           Main
         </div>
-        {navItems.map((item) => (
+        {navItems.map((item: any) => (
           <NavLink
             key={item.href}
             item={item}
@@ -161,7 +161,7 @@ function SidebarContent({ onLinkClick, session }: { onLinkClick?: () => void; se
             <div className="mb-1 mt-5 px-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
               Admin
             </div>
-            {adminItems.map((item) => (
+            {adminItems.map((item: any) => (
               <NavLink
                 key={item.href}
                 item={item}

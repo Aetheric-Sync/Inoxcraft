@@ -39,7 +39,7 @@ export function calculateCost(input: CostEngineInput): CostEngineResult {
     throw new Error("Transport cost cannot be negative");
   }
 
-  const lines: ProjectMaterialLine[] = input.materials.map((m) => {
+  const lines: ProjectMaterialLine[] = input.materials.map((m: any) => {
     if (m.quantity <= 0) {
       throw new Error(`Quantity for "${m.materialName}" must be greater than 0`);
     }
@@ -57,7 +57,7 @@ export function calculateCost(input: CostEngineInput): CostEngineResult {
     };
   });
 
-  const rawMaterialCostKobo = lines.reduce((sum, l) => sum + l.lineTotalKobo, 0);
+  const rawMaterialCostKobo = lines.reduce((sum: number, l: any) => sum + l.lineTotalKobo, 0);
   const complexityMultiplier = COMPLEXITY_MULTIPLIERS[input.complexity];
   const adjustedMaterialCostKobo = Math.round(rawMaterialCostKobo * complexityMultiplier);
   const subtotalKobo = adjustedMaterialCostKobo + input.labourCostKobo + input.transportCostKobo;

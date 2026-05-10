@@ -64,7 +64,7 @@ export const projectRepository = {
         totalCostKobo: data.totalCostKobo,
         notes: data.notes ?? null,
         materials: {
-          create: data.materials.map((m) => ({
+          create: data.materials.map((m: any) => ({
             materialId: m.materialId,
             quantity: m.quantity,
             unitCostKobo: m.unitCostKobo,

@@ -42,13 +42,13 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
   if (!customer) notFound();
 
   const totalRevenue = customer.projects
-    .filter((p) => p.status === "accepted" || p.status === "completed")
-    .reduce((sum, p) => sum + p.totalCostKobo, 0);
+    .filter((p: any) => p.status === "accepted" || p.status === "completed")
+    .reduce((sum: number, p: any) => sum + p.totalCostKobo, 0);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button render={<Link href="/customers" />} nativeButton={false} variant="ghost" size="sm">
+        <Button render={<Link href="/customers" />} variant="ghost" size="sm">
           <ArrowLeft className="mr-1 h-4 w-4" />
           Customers
         </Button>
@@ -140,7 +140,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                   </TableCell>
                 </TableRow>
               ) : (
-                customer.projects.map((project) => (
+                customer.projects.map((project: any) => (
                   <TableRow key={project.id} className="hover:bg-slate-50/50">
                     <TableCell className="font-medium">{project.projectType}</TableCell>
                     <TableCell>
@@ -159,7 +159,6 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                     <TableCell className="text-right">
                       <Button
                         render={<Link href={`/projects/${project.id}`} />}
-                        nativeButton={false}
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-inox-600"

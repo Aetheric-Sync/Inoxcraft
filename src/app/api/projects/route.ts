@@ -43,9 +43,9 @@ export async function POST(req: NextRequest) {
       if (!parsed.success) return badRequest(parsed.error.issues[0]?.message ?? "Invalid input");
 
       const allMaterials = await materialRepository.findAll();
-      const materialMap = new Map(allMaterials.map((m) => [m.id, m]));
+      const materialMap = new Map(allMaterials.map((m: any) => [m.id, m]));
 
-      const materialLines = parsed.data.materials.map((line) => {
+      const materialLines = parsed.data.materials.map((line: any) => {
         const mat = materialMap.get(line.materialId);
         if (!mat) throw new Error(`Material ${line.materialId} not found`);
         return {
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
         createdById: userId,
         complexity: parsed.data.complexity,
         totalCostKobo: breakdown.totalCostKobo,
-        materials: materialLines.map((m) => ({
+        materials: materialLines.map((m: any) => ({
           materialId: m.materialId,
           quantity: m.quantity,
           unitCostKobo: m.unitCostKobo,

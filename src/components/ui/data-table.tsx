@@ -19,7 +19,7 @@ interface DataTableProps<T> {
 function SkeletonRow({ cols }: { cols: number }) {
   return (
     <tr>
-      {Array.from({ length: cols }).map((_, i) => (
+      {Array.from({ length: cols }).map((_: any, i: number) => (
         <td key={i} className="px-4 py-3">
           <div className="h-4 w-3/4 rounded-md shimmer" />
         </td>
@@ -40,7 +40,7 @@ export function DataTable<T extends { id?: string }>({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/40">
-              {columns.map((col) => (
+              {columns.map((col: any) => (
                 <th
                   key={col.key}
                   className={cn(
@@ -55,7 +55,7 @@ export function DataTable<T extends { id?: string }>({
           </thead>
           <tbody className="divide-y divide-border">
             {isLoading
-              ? Array.from({ length: 5 }).map((_, i) => (
+              ? Array.from({ length: 5 }).map((_: any, i: number) => (
                   <SkeletonRow key={i} cols={columns.length} />
                 ))
               : data.length === 0
@@ -74,12 +74,12 @@ export function DataTable<T extends { id?: string }>({
                   </td>
                 </tr>
               )
-              : data.map((row, i) => (
+              : data.map((row: any, i: number) => (
                 <tr
                   key={row.id ?? i}
                   className="group transition-colors hover:bg-muted/30"
                 >
-                  {columns.map((col) => (
+                  {columns.map((col: any) => (
                     <td
                       key={col.key}
                       className={cn("px-4 py-3 align-middle", col.className)}

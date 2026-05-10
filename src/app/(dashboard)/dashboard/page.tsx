@@ -118,7 +118,7 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {stats.recentProjects.map((project) => (
+            {stats.recentProjects.map((project: any) => (
               <Link
                 key={project.id}
                 href={`/projects/${project.id}`}
