@@ -91,9 +91,9 @@ function MaterialForm({
   });
 
   return (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     <form
       onSubmit={(e) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         void handleSubmit(onSubmit as any)(e);
       }}
       className="space-y-4"
