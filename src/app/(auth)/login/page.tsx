@@ -45,6 +45,7 @@ export default function LoginPage() {
       if (result?.error) {
         toast.error("Invalid email or password. Please try again.");
       } else {
+        toast.success("Welcome back! Signing you in...");
         router.push("/dashboard");
         router.refresh();
       }
