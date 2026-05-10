@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   },
   description:
     "Professional quotation and project management for stainless steel fabrication",
+  icons: {
+    icon: "/images/favicon.png",
+    shortcut: "/images/favicon.png",
+    apple: "/images/favicon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

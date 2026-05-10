@@ -74,12 +74,12 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-1 flex-col justify-between p-10">
           {/* logo */}
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-inox-gradient shadow-inox">
-              <Layers className="h-5 w-5 text-white" />
+            <div className="flex items-center justify-center overflow-hidden rounded-xl shadow-inox bg-white p-1">
+              <img src="/images/logo.png" alt="Logo" className="h-10 w-auto object-contain" />
             </div>
             <div>
-              <p className="text-sm font-bold leading-none text-white">
-                HAKEEM'S INOXCRAFT
+              <p className="text-sm font-bold leading-none text-white uppercase tracking-tight">
+                INOXCRAFT
               </p>
               <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-500">
                 Fabrication Suite
@@ -145,10 +145,10 @@ export default function LoginPage() {
         >
           {/* mobile logo */}
           <div className="flex items-center gap-2 lg:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-inox-gradient">
-              <Layers className="h-4 w-4 text-white" />
+            <div className="flex h-10 items-center justify-center overflow-hidden rounded-lg">
+              <img src="/images/logo.png" alt="Logo" className="h-full w-auto" />
             </div>
-            <span className="text-sm font-bold">INOXCRAFT</span>
+            <span className="text-lg font-bold tracking-tight">INOXCRAFT</span>
           </div>
 
           <div>

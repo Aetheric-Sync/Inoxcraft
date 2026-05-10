@@ -125,8 +125,8 @@ function SidebarContent({ onLinkClick, session }: { onLinkClick?: () => void; se
     <div className="flex h-full flex-col bg-neutral-950 text-white">
       {/* ── Logo ───────────────────────────────── */}
       <div className="flex items-center gap-3 border-b border-white/8 px-5 py-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-inox-gradient shadow-inox">
-          <Layers className="h-4 w-4 text-white" />
+        <div className="flex items-center justify-center overflow-hidden rounded-lg bg-white p-0.5">
+          <img src="/images/logo.png" alt="Logo" className="h-7 w-auto object-contain" />
         </div>
         <div>
           <p className="text-sm font-semibold leading-none text-white">
@@ -227,10 +227,10 @@ export function SidebarNav({ session }: { session: Session }) {
           </SheetContent>
         </Sheet>
         <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-inox-gradient">
-            <Layers className="h-3 w-3 text-white" />
+          <div className="flex h-8 items-center justify-center overflow-hidden rounded-md bg-white p-0.5 shadow-sm">
+            <img src="/images/logo.png" alt="Logo" className="h-full w-auto" />
           </div>
-          <span className="text-sm font-semibold">INOXCRAFT</span>
+          <span className="text-sm font-bold tracking-tight">INOXCRAFT</span>
         </div>
       </div>
 
