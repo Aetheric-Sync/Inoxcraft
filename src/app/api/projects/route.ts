@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       const materialMap = new Map(allMaterials.map((m: any) => [m.id, m]));
 
       const materialLines = parsed.data.materials.map((line: any) => {
-        const mat = materialMap.get(line.materialId);
+        const mat = materialMap.get(line.materialId) as any;
         if (!mat) throw new Error(`Material ${line.materialId} not found`);
         return {
           materialId: mat.id,
