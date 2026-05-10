@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { withAuth } from "@/lib/api-guard";
 import { ok, created, badRequest, forbidden, serverError } from "@/lib/api-response";
 import { userRepository } from "@/repositories/user.repository";
-import { registerSchema } from "@/lib/validators/auth.schema";
+import { createUserSchema } from "@/lib/validators/auth.schema";
 
 export async function GET(req: NextRequest) {
   return withAuth(req, async (_uid, role) => {
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     if (role !== "admin") return forbidden();
     try {
       const body: unknown = await req.json();
-      const parsed = registerSchema.safeParse(body);
+      const parsed = createUserSchema.safeParse(body);
       if (!parsed.success) return badRequest(parsed.error.issues[0]?.message ?? "Invalid input");
 
       const existing = await userRepository.findByEmail(parsed.data.email);
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         name: parsed.data.name,
         email: parsed.data.email,
         passwordHash,
-        role: "staff", // Default to staff for created users
+        role: parsed.data.role,
       });
 
       return created({
