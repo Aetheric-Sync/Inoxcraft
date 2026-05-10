@@ -12,9 +12,11 @@ export async function GET(req: NextRequest) {
       const page = parseInt(searchParams.get("page") ?? "1", 10);
       const limit = parseInt(searchParams.get("limit") ?? "20", 10);
 
+      const search = searchParams.get("search") ?? "";
+
       const [customers, total] = await Promise.all([
-        customerRepository.findAll(page, limit),
-        customerRepository.count(),
+        customerRepository.findAll(search, page, limit),
+        customerRepository.count(search),
       ]);
 
       return ok({

@@ -1,15 +1,38 @@
 import { db } from "@/lib/db";
 
 export const customerRepository = {
-  findAll: (page = 1, limit = 20) =>
-    db.customer.findMany({
-      where: { deletedAt: null },
+  findAll: (search = "", page = 1, limit = 20) => {
+    const where = search
+      ? {
+          deletedAt: null,
+          OR: [
+            { name: { contains: search, mode: "insensitive" as const } },
+            { email: { contains: search, mode: "insensitive" as const } },
+            { phone: { contains: search, mode: "insensitive" as const } },
+          ],
+        }
+      : { deletedAt: null };
+    return db.customer.findMany({
+      where,
       orderBy: { name: "asc" },
       skip: (page - 1) * limit,
       take: limit,
-    }),
+    });
+  },
 
-  count: () => db.customer.count({ where: { deletedAt: null } }),
+  count: (search = "") => {
+    const where = search
+      ? {
+          deletedAt: null,
+          OR: [
+            { name: { contains: search, mode: "insensitive" as const } },
+            { email: { contains: search, mode: "insensitive" as const } },
+            { phone: { contains: search, mode: "insensitive" as const } },
+          ],
+        }
+      : { deletedAt: null };
+    return db.customer.count({ where });
+  },
 
   findById: (id: string) =>
     db.customer.findFirst({
