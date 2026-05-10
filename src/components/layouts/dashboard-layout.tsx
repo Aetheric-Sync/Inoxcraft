@@ -1,18 +1,27 @@
-import React from "react";
-
+import { requireSession } from "@/lib/session";
 import { SidebarNav } from "./sidebar-nav";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
+export async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await requireSession();
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50/50 lg:flex-row">
-      <SidebarNav />
-      <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10">
-        <div className="mx-auto max-w-7xl space-y-8">{children}</div>
-      </main>
+    <div className="flex min-h-screen bg-neutral-50 dark:bg-neutral-950">
+      <SidebarNav session={session} />
+
+      {/* ── Main ──────────────────────────────── */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Top bar (desktop only) */}
+        <header className="hidden items-center justify-end border-b border-border bg-background px-6 py-3 lg:flex">
+          <ThemeToggle />
+        </header>
+
+        <main className="flex-1 overflow-y-auto pt-16 lg:pt-0">
+          <div className="page-container py-6 lg:py-8">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

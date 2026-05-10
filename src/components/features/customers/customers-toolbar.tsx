@@ -76,27 +76,31 @@ export function CustomersToolbar() {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <form onSubmit={handleSearch} className="flex min-w-60 flex-1 gap-2">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <form onSubmit={handleSearch} className="flex w-full sm:max-w-[320px] gap-2">
         <div className="relative flex-1">
-          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search customers…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-9 transition-shadow focus:shadow-glow"
           />
         </div>
-        <Button type="submit" variant="outline" size="sm">
+        <Button type="submit" variant="secondary" className="transition-all duration-200">
           Search
         </Button>
       </form>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogTrigger render={<Button className="bg-inox-600 hover:bg-inox-700 text-white" />}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Customer
-        </DialogTrigger>
+        <DialogTrigger
+          render={
+            <Button className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98]">
+              <Plus className="mr-2 h-4 w-4" />
+              New Customer
+            </Button>
+          }
+        />
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Create New Customer</DialogTitle>
@@ -105,16 +109,16 @@ export function CustomersToolbar() {
             onSubmit={(e) => {
               void handleSubmit(onSubmit)(e);
             }}
-            className="mt-2 space-y-4"
+            className="mt-4 space-y-4"
           >
             <div className="space-y-1.5">
               <Label htmlFor="cust-name">Name *</Label>
-              <Input id="cust-name" {...register("name")} placeholder="Alhaji Musa" />
-              {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+              <Input id="cust-name" {...register("name")} placeholder="Alhaji Musa" className="transition-shadow focus:shadow-glow" />
+              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cust-phone">Phone</Label>
-              <Input id="cust-phone" {...register("phone")} placeholder="+234 800 000 0000" />
+              <Input id="cust-phone" {...register("phone")} placeholder="+234 800 000 0000" className="transition-shadow focus:shadow-glow" />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cust-email">Email</Label>
@@ -123,8 +127,9 @@ export function CustomersToolbar() {
                 type="email"
                 {...register("email")}
                 placeholder="customer@example.com"
+                className="transition-shadow focus:shadow-glow"
               />
-              {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
+              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cust-address">Address</Label>
@@ -133,14 +138,17 @@ export function CustomersToolbar() {
                 {...register("address")}
                 rows={2}
                 placeholder="Lagos, Nigeria"
+                className="transition-shadow focus:shadow-glow resize-none"
               />
             </div>
             <Button
               type="submit"
-              className="bg-inox-600 hover:bg-inox-700 w-full text-white"
+              className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98] w-full"
               disabled={loading}
             >
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {loading ? (
+                <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              ) : null}
               Create Customer
             </Button>
           </form>

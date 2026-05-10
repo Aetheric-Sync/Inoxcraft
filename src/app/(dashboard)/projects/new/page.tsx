@@ -6,7 +6,8 @@ import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { Loader2, Plus, Trash2, ChevronRight, ChevronLeft, Check, Calculator, Building2, Ruler, Cog, Hammer } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils/cn";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface MaterialOption {
@@ -70,7 +72,12 @@ function formatNaira(naira: number) {
   }).format(naira);
 }
 
-const STEPS = ["Customer", "Details", "Materials", "Costs", "Review"];
+const STEPS = [
+  { id: "customer", title: "Customer", icon: Building2 },
+  { id: "details", title: "Details", icon: Ruler },
+  { id: "materials", title: "Materials", icon: Hammer },
+  { id: "costs", title: "Costs", icon: Calculator },
+];
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -92,7 +99,6 @@ export default function NewProjectPage() {
     trigger,
     formState: { errors },
   } = useForm<FormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
       complexity: "standard",
@@ -174,9 +180,16 @@ export default function NewProjectPage() {
       2: ["materials"],
       3: ["labourCostNaira", "transportCostNaira", "profitMarginPct"],
     };
+    
+    // For the final step, just submit
+    if (step === STEPS.length - 1) {
+      void handleSubmit(onSubmit)();
+      return;
+    }
+    
     const ok = await trigger(fieldsToValidate[step]);
     if (ok) {
-      if (step === 1) void loadMaterials();
+      if (step === 0) void loadMaterials();
       setStep((s) => s + 1);
     }
   };
@@ -207,7 +220,7 @@ export default function NewProjectPage() {
         toast.error(result.error ?? "Failed to create project");
         return;
       }
-      toast.success("Project created!");
+      toast.success("Project created successfully!");
       router.push(`/projects/${result.data.id}`);
     } catch {
       toast.error("Network error. Please try again.");
@@ -217,406 +230,519 @@ export default function NewProjectPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">New Project</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Step {step + 1} of {STEPS.length} — {STEPS[step]}
-        </p>
-      </div>
+    <div className="grid lg:grid-cols-12 gap-8 h-full min-h-[calc(100vh-8rem)]">
+      {/* ── Left Column: Form ────────────────────────────────────────────── */}
+      <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Create New Project</h1>
+          <p className="mt-2 text-muted-foreground">Follow the steps below to set up a new project and generate its initial quotation.</p>
+        </div>
 
-      {/* Progress */}
-      <div
-        className="flex items-center gap-1"
-        role="progressbar"
-        aria-valuenow={step + 1}
-        aria-valuemin={1}
-        aria-valuemax={STEPS.length}
-      >
-        {STEPS.map((s, i) => (
-          <div key={s} className="flex flex-1 items-center">
-            <div
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${i < step ? "bg-inox-600 text-white" : i === step ? "bg-inox-100 text-inox-700 border-inox-600 border-2" : "bg-slate-100 text-slate-400"}`}
-            >
-              {i < step ? <Check className="h-3.5 w-3.5" /> : i + 1}
-            </div>
-            {i < STEPS.length - 1 && (
-              <div className={`mx-1 h-0.5 flex-1 ${i < step ? "bg-inox-600" : "bg-slate-200"}`} />
-            )}
-          </div>
-        ))}
-      </div>
-
-      <form
-        onSubmit={(e) => {
-          void handleSubmit(onSubmit)(e);
-        }}
-      >
-        {/* STEP 1: Customer */}
-        {step === 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Select Customer</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="cust-search">Search customer</Label>
-                <Input
-                  id="cust-search"
-                  placeholder="Type name, phone, or email…"
-                  value={customerSearch}
-                  onChange={(e) => {
-                    setCustomerSearch(e.target.value);
-                    void searchCustomers(e.target.value);
-                  }}
-                />
-              </div>
-              {customers.length > 0 && (
-                <div className="max-h-40 divide-y overflow-y-auto rounded-md border">
-                  {customers.map((c) => (
-                    <div
-                      key={c.id}
-                      role="button"
-                      tabIndex={0}
-                      className="hover:bg-inox-50 hover:text-inox-700 w-full cursor-pointer px-3 py-2 text-left text-sm transition-colors"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          setValue("customerId", c.id);
-                          setSelectedCustomerName(c.name);
-                          setCustomers([]);
-                          setCustomerSearch("");
-                        }
-                      }}
-                      onClick={() => {
-                        setValue("customerId", c.id);
-                        setSelectedCustomerName(c.name);
-                        setCustomers([]);
-                        setCustomerSearch("");
-                      }}
-                    >
-                      {c.name}
-                    </div>
-                  ))}
+        {/* Progress Steps */}
+        <div className="relative mb-12">
+          <div className="absolute top-1/2 left-0 w-full h-0.5 -translate-y-1/2 bg-muted/50 rounded-full" />
+          <div className="relative flex justify-between">
+            {STEPS.map((s, i) => {
+              const Icon = s.icon;
+              const isCompleted = i < step;
+              const isActive = i === step;
+              return (
+                <div key={s.id} className="flex flex-col items-center gap-3 bg-neutral-50 dark:bg-neutral-950 px-2 relative z-10">
+                  <div
+                    className={cn(
+                      "flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-500",
+                      isCompleted 
+                        ? "border-inox-600 bg-inox-600 text-white shadow-inox shadow-inox-500/20" 
+                        : isActive 
+                        ? "border-inox-600 bg-background text-inox-600 shadow-sm" 
+                        : "border-muted bg-muted/20 text-muted-foreground"
+                    )}
+                  >
+                    {isCompleted ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                  </div>
+                  <span className={cn(
+                    "text-xs font-semibold uppercase tracking-wider transition-colors duration-200 hidden sm:block",
+                    isActive || isCompleted ? "text-foreground" : "text-muted-foreground"
+                  )}>
+                    {s.title}
+                  </span>
                 </div>
-              )}
-              {customerId && (
-                <p className="text-inox-700 text-sm font-medium">
-                  ✓ Selected: {selectedCustomerName}
-                </p>
-              )}
-              {errors.customerId && (
-                <p className="text-xs text-red-500">{errors.customerId.message}</p>
-              )}
+              );
+            })}
+          </div>
+        </div>
 
-              <Separator />
-              <p className="text-sm font-medium text-slate-700">Or create a new customer</p>
-              <div className="space-y-2">
-                <Input
-                  placeholder="Full name *"
-                  value={newCustomerName}
-                  onChange={(e) => setNewCustomerName(e.target.value)}
-                />
-                <Input
-                  placeholder="Phone (optional)"
-                  value={newCustomerPhone}
-                  onChange={(e) => setNewCustomerPhone(e.target.value)}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={!newCustomerName || creatingCustomer}
-                  onClick={() => {
-                    void createCustomer();
-                  }}
-                >
-                  {creatingCustomer ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Plus className="mr-2 h-4 w-4" />
-                  )}
-                  Create & select
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Form Container */}
+        <div className="flex-1">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+            className="h-full flex flex-col"
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="flex-1"
+              >
+                {/* STEP 1: Customer */}
+                {step === 0 && (
+                  <div className="space-y-6">
+                    <div className="space-y-1">
+                      <h2 className="text-xl font-semibold">Select Customer</h2>
+                      <p className="text-sm text-muted-foreground">Search for an existing customer or create a new one.</p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="cust-search">Search customer</Label>
+                        <div className="relative">
+                          <Input
+                            id="cust-search"
+                            placeholder="Type name, phone, or email…"
+                            className="bg-white dark:bg-neutral-900"
+                            value={customerSearch}
+                            onChange={(e) => {
+                              setCustomerSearch(e.target.value);
+                              void searchCustomers(e.target.value);
+                            }}
+                          />
+                        </div>
+                      </div>
+                      
+                      {customers.length > 0 && (
+                        <Card className="max-h-40 overflow-y-auto border-border shadow-sm">
+                          <div className="divide-y divide-border">
+                            {customers.map((c) => (
+                              <div
+                                key={c.id}
+                                role="button"
+                                tabIndex={0}
+                                className="w-full cursor-pointer px-4 py-3 text-left text-sm transition-colors hover:bg-inox-50 dark:hover:bg-inox-950/30 hover:text-inox-600"
+                                onClick={() => {
+                                  setValue("customerId", c.id);
+                                  setSelectedCustomerName(c.name);
+                                  setCustomers([]);
+                                  setCustomerSearch("");
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    setValue("customerId", c.id);
+                                    setSelectedCustomerName(c.name);
+                                    setCustomers([]);
+                                    setCustomerSearch("");
+                                  }
+                                }}
+                              >
+                                <span className="font-medium">{c.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </Card>
+                      )}
 
-        {/* STEP 2: Project Details */}
-        {step === 1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1.5">
-                <Label>Project type *</Label>
-                <Input
-                  {...register("projectType")}
-                  placeholder="e.g. Kitchen Sink, Security Door"
-                />
-                {errors.projectType && (
-                  <p className="text-xs text-red-500">{errors.projectType.message}</p>
-                )}
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {(["dimensionL", "dimensionW", "dimensionH"] as const).map((d, i) => (
-                  <div key={d} className="space-y-1.5">
-                    <Label>{["Length", "Width", "Height"][i]} (mm)</Label>
-                    <Input type="number" {...register(d)} />
-                    {errors[d] && <p className="text-xs text-red-500">{errors[d]?.message}</p>}
-                  </div>
-                ))}
-              </div>
-              <div className="space-y-1.5">
-                <Label>Complexity</Label>
-                <Select
-                  defaultValue="standard"
-                  onValueChange={(v) => {
-                    if (v) setValue("complexity", v as FormData["complexity"]);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="standard">Standard (×1.0)</SelectItem>
-                    <SelectItem value="complex">Complex (×1.35)</SelectItem>
-                    <SelectItem value="bespoke">Bespoke (×1.7)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Notes</Label>
-                <Textarea {...register("notes")} rows={3} placeholder="Any special requirements…" />
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                      {customerId && (
+                        <div className="rounded-lg border border-inox-200 bg-inox-50/50 dark:bg-inox-950/20 dark:border-inox-900 px-4 py-3 flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-inox-100 dark:bg-inox-900 flex items-center justify-center text-inox-600">
+                            <Check className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Selected Customer</p>
+                            <p className="text-sm font-semibold text-foreground">{selectedCustomerName}</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {errors.customerId && (
+                        <p className="text-sm text-destructive font-medium">{errors.customerId.message}</p>
+                      )}
 
-        {/* STEP 3: Materials */}
-        {step === 2 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Materials</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {fields.map((field, idx) => {
-                const mat = allMaterials.find((m) => m.id === watchedMaterials[idx]?.materialId);
-                const lineTotal = mat
-                  ? (mat.pricePerUnitKobo / 100) * (watchedMaterials[idx]?.quantity ?? 0)
-                  : 0;
-                return (
-                  <div key={field.id} className="flex items-end gap-2">
-                    <div className="flex-1 space-y-1.5">
-                      <Label>Material</Label>
-                      <Select
-                        value={watchedMaterials[idx]?.materialId}
-                        onValueChange={(v) => {
-                          if (v) setValue(`materials.${idx}.materialId`, v);
-                        }}
+                      <div className="relative py-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-muted" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-neutral-50 dark:bg-neutral-950 px-2 text-muted-foreground font-semibold">Or create new</span>
+                        </div>
+                      </div>
+
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <Label>Full name *</Label>
+                          <Input
+                            placeholder="John Doe"
+                            className="bg-white dark:bg-neutral-900"
+                            value={newCustomerName}
+                            onChange={(e) => setNewCustomerName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Phone (optional)</Label>
+                          <Input
+                            placeholder="+234..."
+                            className="bg-white dark:bg-neutral-900"
+                            value={newCustomerPhone}
+                            onChange={(e) => setNewCustomerPhone(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                        disabled={!newCustomerName || creatingCustomer}
+                        onClick={() => void createCustomer()}
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select…" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {allMaterials.map((m) => (
-                            <SelectItem key={m.id} value={m.id}>
-                              {m.name} ({m.unitType})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        {creatingCustomer ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Plus className="mr-2 h-4 w-4" />
+                        )}
+                        Create & Select Customer
+                      </Button>
                     </div>
-                    <div className="w-24 space-y-1.5">
-                      <Label>Qty</Label>
-                      <Input type="number" {...register(`materials.${idx}.quantity`)} min={1} />
-                    </div>
-                    <div className="w-32 pb-2 text-right font-mono text-sm text-slate-600">
-                      {formatNaira(lineTotal)}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => remove(idx)}
-                      className="pb-2 text-red-400 hover:text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
-                );
-              })}
+                )}
+
+                {/* STEP 2: Project Details */}
+                {step === 1 && (
+                  <div className="space-y-6">
+                    <div className="space-y-1">
+                      <h2 className="text-xl font-semibold">Project Details</h2>
+                      <p className="text-sm text-muted-foreground">Specify the dimensions and complexity of the project.</p>
+                    </div>
+                    
+                    <div className="grid gap-6">
+                      <div className="space-y-1.5">
+                        <Label>Project type *</Label>
+                        <Input
+                          {...register("projectType")}
+                          placeholder="e.g. Stainless Steel Kitchen Sink"
+                          className="bg-white dark:bg-neutral-900 text-lg py-6"
+                        />
+                        {errors.projectType && (
+                          <p className="text-xs text-destructive">{errors.projectType.message}</p>
+                        )}
+                      </div>
+
+                      <div className="grid sm:grid-cols-3 gap-4">
+                        {(["dimensionL", "dimensionW", "dimensionH"] as const).map((d, i) => (
+                          <div key={d} className="space-y-1.5">
+                            <Label>{["Length", "Width", "Height"][i]} (mm)</Label>
+                            <Input type="number" {...register(d)} className="bg-white dark:bg-neutral-900" />
+                            {errors[d] && <p className="text-xs text-destructive">{errors[d]?.message}</p>}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label>Complexity</Label>
+                        <Select
+                          defaultValue="standard"
+                          onValueChange={(v) => {
+                            if (v) setValue("complexity", v as FormData["complexity"]);
+                          }}
+                        >
+                          <SelectTrigger className="bg-white dark:bg-neutral-900">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="standard">Standard (×1.0)</SelectItem>
+                            <SelectItem value="complex">Complex (×1.35)</SelectItem>
+                            <SelectItem value="bespoke">Bespoke (×1.7)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label>Notes & Special Requirements</Label>
+                        <Textarea 
+                          {...register("notes")} 
+                          rows={4} 
+                          className="bg-white dark:bg-neutral-900 resize-none"
+                          placeholder="Any specific design requirements, delivery details, or client preferences..." 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 3: Materials */}
+                {step === 2 && (
+                  <div className="space-y-6">
+                    <div className="space-y-1 flex items-center justify-between">
+                      <div>
+                        <h2 className="text-xl font-semibold">Materials Required</h2>
+                        <p className="text-sm text-muted-foreground">List all raw materials needed for fabrication.</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => append({ materialId: "", quantity: 1 })}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Material
+                      </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {fields.map((field, idx) => {
+                        const mat = allMaterials.find((m) => m.id === watchedMaterials[idx]?.materialId);
+                        const lineTotal = mat
+                          ? (mat.pricePerUnitKobo / 100) * (watchedMaterials[idx]?.quantity ?? 0)
+                          : 0;
+                        
+                        return (
+                          <div key={field.id} className="flex items-end gap-3 p-3 sm:p-4 rounded-xl border border-border bg-white dark:bg-neutral-900 shadow-sm transition-all hover:border-inox-200">
+                            <div className="flex-1 space-y-1.5">
+                              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Material</Label>
+                              <Select
+                                value={watchedMaterials[idx]?.materialId}
+                                onValueChange={(v) => {
+                                  if (v) setValue(`materials.${idx}.materialId`, v);
+                                }}
+                              >
+                                <SelectTrigger className="border-0 shadow-none bg-muted/30 hover:bg-muted/50 focus:ring-0">
+                                  <SelectValue placeholder="Select material…" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {allMaterials.map((m) => (
+                                    <SelectItem key={m.id} value={m.id}>
+                                      {m.name} ({m.unitType}) - {formatNaira(m.pricePerUnitKobo / 100)}/{m.unitType}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            <div className="w-20 sm:w-24 space-y-1.5">
+                              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Qty</Label>
+                              <Input 
+                                type="number" 
+                                {...register(`materials.${idx}.quantity`)} 
+                                min={1} 
+                                className="border-0 shadow-none bg-muted/30 hover:bg-muted/50 focus-visible:ring-0 text-center"
+                              />
+                            </div>
+                            
+                            <div className="w-24 sm:w-32 pb-2.5 text-right font-mono text-sm font-medium">
+                              {formatNaira(lineTotal)}
+                            </div>
+                            
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => remove(idx)}
+                              className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive shrink-0"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        );
+                      })}
+                      
+                      {errors.materials && (
+                        <p className="text-sm text-destructive font-medium px-2 mt-2">
+                          {errors.materials.message ?? "Please add at least one material"}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 4: Costs */}
+                {step === 3 && (
+                  <div className="space-y-6">
+                    <div className="space-y-1">
+                      <h2 className="text-xl font-semibold">Costs & Margins</h2>
+                      <p className="text-sm text-muted-foreground">Set your operational costs and desired profit margin.</p>
+                    </div>
+                    
+                    <div className="grid gap-6">
+                      <div className="space-y-4 p-5 rounded-xl border border-border bg-white dark:bg-neutral-900 shadow-sm">
+                        <div className="space-y-1.5">
+                          <Label className="text-sm font-semibold">Labour Cost (₦)</Label>
+                          <p className="text-xs text-muted-foreground mb-2">Estimated cost for fabrication and assembly.</p>
+                          <Input 
+                            type="number" 
+                            {...register("labourCostNaira")} 
+                            min={0} 
+                            className="text-lg py-6 max-w-sm font-mono"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4 p-5 rounded-xl border border-border bg-white dark:bg-neutral-900 shadow-sm">
+                        <div className="space-y-1.5">
+                          <Label className="text-sm font-semibold">Transport Cost (₦)</Label>
+                          <p className="text-xs text-muted-foreground mb-2">Estimated cost for delivery and installation.</p>
+                          <Input 
+                            type="number" 
+                            {...register("transportCostNaira")} 
+                            min={0} 
+                            className="text-lg py-6 max-w-sm font-mono"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4 p-5 rounded-xl border border-border bg-white dark:bg-neutral-900 shadow-sm">
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-sm font-semibold">Profit Margin</Label>
+                          <span className="inline-flex items-center justify-center rounded-full bg-inox-100 dark:bg-inox-900/50 px-3 py-1 text-sm font-bold text-inox-700 dark:text-inox-400">
+                            {profitPct}%
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          {...register("profitMarginPct")}
+                          min={0}
+                          max={40}
+                          step={1}
+                          className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-inox-600"
+                        />
+                        <div className="flex justify-between text-xs text-muted-foreground mt-2 font-medium">
+                          <span>0%</span>
+                          <span>20%</span>
+                          <span>40%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Navigation Buttons */}
+            <div className="mt-auto pt-8 flex items-center justify-between border-t border-border/50">
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
-                onClick={() => append({ materialId: "", quantity: 1 })}
+                size="lg"
+                onClick={() => setStep((s) => s - 1)}
+                disabled={step === 0 || submitting}
+                className="w-32"
               >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Row
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back
               </Button>
-              {errors.materials && (
-                <p className="text-xs text-red-500">
-                  {errors.materials.message ?? "Check material rows"}
-                </p>
-              )}
-              <div className="text-right font-semibold text-slate-800">
-                Materials subtotal: {formatNaira(materialCostNaira)}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* STEP 4: Costs */}
-        {step === 3 && (
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Cost Inputs</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label>Labour cost (₦)</Label>
-                  <Input type="number" {...register("labourCostNaira")} min={0} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Transport cost (₦)</Label>
-                  <Input type="number" {...register("transportCostNaira")} min={0} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Profit margin: {profitPct}%</Label>
-                  <input
-                    type="range"
-                    {...register("profitMarginPct")}
-                    min={0}
-                    max={40}
-                    step={1}
-                    className="accent-inox-600 w-full"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-inox-50 border-inox-200" data-testid="total-cost-preview">
-              <CardHeader>
-                <CardTitle className="text-inox-700">Live Cost Preview</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                {[
-                  ["Materials", formatNaira(materialCostNaira)],
-                  ["Labour", formatNaira(Number(labourNaira))],
-                  ["Transport", formatNaira(Number(transportNaira))],
-                  [`Complexity (${complexity})`, `×${COMPLEXITY_MULTIPLIERS[complexity]}`],
-                  [`Profit (${profitPct}%)`, formatNaira(profit)],
-                ].map(([l, v]) => (
-                  <div key={l} className="flex justify-between text-slate-600">
-                    <span>{l}</span>
-                    <span>{v}</span>
-                  </div>
-                ))}
-                <Separator />
-                <div className="text-inox-800 flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span>{formatNaira(total)}</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* STEP 5: Review */}
-        {step === 4 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Review & Confirm</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm">
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                <div className="text-slate-500">Customer</div>
-                <div className="font-medium">{selectedCustomerName}</div>
-                <div className="text-slate-500">Project type</div>
-                <div className="font-medium">{projectType}</div>
-                <div className="text-slate-500">Complexity</div>
-                <div className="font-medium capitalize">{complexity}</div>
-                <div className="text-slate-500">Dimensions</div>
-                <div className="font-medium">
-                  {dimensionL} × {dimensionW} × {dimensionH} mm
-                </div>
-              </div>
-              <Separator />
-              <div className="space-y-1">
-                <p className="font-medium text-slate-700">Materials ({fields.length} lines)</p>
-                {watchedMaterials.map((line, i) => {
-                  const mat = allMaterials.find((m) => m.id === line.materialId);
-                  return mat ? (
-                    <div key={i} className="flex justify-between text-slate-600">
-                      <span>
-                        {mat.name} × {line.quantity}
-                      </span>
-                      <span className="font-mono">
-                        {formatNaira((mat.pricePerUnitKobo / 100) * line.quantity)}
-                      </span>
-                    </div>
-                  ) : null;
-                })}
-              </div>
-              <Separator />
-              <div className="space-y-1">
-                {[
-                  ["Materials", formatNaira(materialCostNaira)],
-                  ["Labour", formatNaira(Number(labourNaira))],
-                  ["Transport", formatNaira(Number(transportNaira))],
-                  [`Profit (${profitPct}%)`, formatNaira(profit)],
-                ].map(([l, v]) => (
-                  <div key={l} className="flex justify-between text-slate-600">
-                    <span>{l}</span>
-                    <span>{v}</span>
-                  </div>
-                ))}
-                <div className="text-inox-800 flex justify-between pt-2 text-xl font-bold">
-                  <span>Total</span>
-                  <span>{formatNaira(total)}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Navigation */}
-        <div className="flex justify-between pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setStep((s) => s - 1)}
-            disabled={step === 0}
-          >
-            <ChevronLeft className="mr-1 h-4 w-4" />
-            Back
-          </Button>
-          {step < STEPS.length - 1 ? (
-            <Button
-              type="button"
-              onClick={() => {
-                void goNext();
-              }}
-              className="bg-inox-600 hover:bg-inox-700 text-white"
-            >
-              Next
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              className="bg-inox-600 hover:bg-inox-700 text-white"
-              disabled={submitting}
-            >
-              {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Create Project
-            </Button>
-          )}
+              
+              <Button
+                type="button"
+                size="lg"
+                onClick={() => void goNext()}
+                disabled={submitting}
+                className="w-40 bg-inox-600 hover:bg-inox-700 text-white shadow-inox transition-all active:scale-[0.98]"
+              >
+                {submitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : step === STEPS.length - 1 ? (
+                  <>Create Project <Check className="ml-2 h-4 w-4" /></>
+                ) : (
+                  <>Next Step <ChevronRight className="ml-2 h-4 w-4" /></>
+                )}
+              </Button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
+
+      {/* ── Right Column: Live Summary ─────────────────────────────────────── */}
+      <div className="hidden lg:block lg:col-span-5 xl:col-span-4">
+        <div className="sticky top-6">
+          <Card className="border-border shadow-card-lg overflow-hidden bg-white/50 dark:bg-neutral-900/50 backdrop-blur-xl">
+            <div className="h-2 w-full bg-inox-gradient" />
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Calculator className="h-5 w-5 text-inox-600" />
+                Live Cost Preview
+              </CardTitle>
+              <CardDescription>Real-time calculation based on your inputs</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              
+              {/* Context Summary */}
+              {(selectedCustomerName || projectType) && (
+                <div className="bg-muted/30 rounded-xl p-4 space-y-3 border border-border/50">
+                  {selectedCustomerName && (
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">Customer</p>
+                      <p className="text-sm font-medium">{selectedCustomerName}</p>
+                    </div>
+                  )}
+                  {projectType && (
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">Project</p>
+                      <p className="text-sm font-medium">{projectType}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Cost Breakdown */}
+              <div className="space-y-3">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Cost Breakdown</p>
+                <div className="space-y-2.5 text-sm">
+                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                    <span className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                      Materials
+                    </span>
+                    <span className="font-mono font-medium text-foreground">{formatNaira(materialCostNaira)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                    <span className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                      Labour
+                    </span>
+                    <span className="font-mono font-medium text-foreground">{formatNaira(Number(labourNaira))}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                    <span className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                      Transport
+                    </span>
+                    <span className="font-mono font-medium text-foreground">{formatNaira(Number(transportNaira))}</span>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Adjustments */}
+              <div className="space-y-3">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Adjustments</p>
+                <div className="space-y-2.5 text-sm">
+                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                    <span>Complexity ({complexity})</span>
+                    <span className="font-mono font-medium text-foreground">× {COMPLEXITY_MULTIPLIERS[complexity]}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                    <span className="flex items-center gap-1">Profit Margin <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded text-[10px] font-bold">{profitPct}%</span></span>
+                    <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">+{formatNaira(profit)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="pt-4 border-t-2 border-dashed border-border mt-2">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Total Quotation</p>
+                    <p className="text-3xl font-bold tracking-tight text-foreground">{formatNaira(total)}</p>
+                  </div>
+                </div>
+              </div>
+              
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,15 +36,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
+import { DataTable } from "@/components/ui/data-table";
+import { cn } from "@/lib/utils/cn";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -96,22 +89,22 @@ function MaterialForm({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         void handleSubmit(onSubmit as any)(e);
       }}
-      className="space-y-4"
+      className="space-y-4 pt-2"
     >
       <div className="space-y-1.5">
         <Label>Name</Label>
-        <Input {...register("name")} placeholder="304 Stainless Sheet" />
-        {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+        <Input {...register("name")} placeholder="304 Stainless Sheet" className="transition-shadow focus:shadow-glow" />
+        {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
       </div>
       <div className="space-y-1.5">
         <Label>Unit Type</Label>
         <Select
           defaultValue={defaultValues?.unitType}
           onValueChange={(v) => {
-            if (v) setValue("unitType", v);
+            if (v) setValue("unitType", v as FormData["unitType"]);
           }}
         >
-          <SelectTrigger>
+          <SelectTrigger className="transition-shadow focus:shadow-glow">
             <SelectValue placeholder="Select unit" />
           </SelectTrigger>
           <SelectContent>
@@ -122,21 +115,21 @@ function MaterialForm({
             ))}
           </SelectContent>
         </Select>
-        {errors.unitType && <p className="text-xs text-red-500">{errors.unitType.message}</p>}
+        {errors.unitType && <p className="text-xs text-destructive">{errors.unitType.message}</p>}
       </div>
       <div className="space-y-1.5">
         <Label>Price per unit (₦)</Label>
-        <Input type="number" {...register("pricePerUnitKobo")} placeholder="5000" />
+        <Input type="number" {...register("pricePerUnitKobo")} placeholder="5000" className="transition-shadow focus:shadow-glow" />
         {errors.pricePerUnitKobo && (
-          <p className="text-xs text-red-500">{errors.pricePerUnitKobo.message}</p>
+          <p className="text-xs text-destructive">{errors.pricePerUnitKobo.message}</p>
         )}
       </div>
       <Button
         type="submit"
-        className="bg-inox-600 hover:bg-inox-700 w-full text-white"
+        className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98] w-full"
         disabled={loading}
       >
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {loading && <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white/30 border-t-white" />}
         Save Material
       </Button>
     </form>
@@ -214,10 +207,14 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
     <div className="space-y-4">
       <div className="flex justify-end">
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
-          <DialogTrigger render={<Button className="bg-inox-600 hover:bg-inox-700 text-white" />}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Material
-          </DialogTrigger>
+          <DialogTrigger
+            render={
+              <Button className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98]">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Material
+              </Button>
+            }
+          />
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Add Material</DialogTitle>
@@ -227,102 +224,140 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
         </Dialog>
       </div>
 
-      <Card className="border-slate-200 shadow-sm">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50">
-                <TableHead>Name</TableHead>
-                <TableHead>Unit</TableHead>
-                <TableHead className="text-right">Price/Unit</TableHead>
-                <TableHead>Last Updated</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {materials.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-slate-400">
-                    No materials yet.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                materials.map((m) => (
-                  <TableRow key={m.id} className="hover:bg-slate-50/50">
-                    <TableCell className="font-medium">{m.name}</TableCell>
-                    <TableCell className="text-slate-600 capitalize">{m.unitType}</TableCell>
-                    <TableCell className="text-right font-mono">
-                      {formatNaira(m.pricePerUnitKobo)}
-                    </TableCell>
-                    <TableCell className="text-sm text-slate-500">
-                      {new Date(m.updatedAt).toLocaleDateString("en-NG")}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Dialog
-                          open={editMat?.id === m.id}
-                          onOpenChange={(o) => setEditMat(o ? m : null)}
-                        >
-                          <DialogTrigger render={<Button variant="ghost" size="sm" />}>
-                            <Pencil className="h-4 w-4" />
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-md">
-                            <DialogHeader>
-                              <DialogTitle>Edit Material</DialogTitle>
-                            </DialogHeader>
-                            <MaterialForm
-                              defaultValues={{
-                                name: m.name,
-                                unitType: m.unitType as FormData["unitType"],
-                                pricePerUnitKobo: m.pricePerUnitKobo / 100,
-                              }}
-                              onSubmit={handleEdit}
-                              loading={loading}
-                            />
-                          </DialogContent>
-                        </Dialog>
-                        <AlertDialog>
-                          <AlertDialogTrigger
-                            render={
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-500 hover:text-red-600"
-                              />
-                            }
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete material?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will soft-delete &quot;{m.name}&quot;. This action can be
-                                reversed by an admin.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => {
-                                  void handleDelete(m.id);
-                                }}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <DataTable
+        data={materials}
+        emptyMessage="No materials yet. Create one to get started."
+        columns={[
+          {
+            key: "name",
+            header: "Material",
+            cell: (row) => <span className="font-medium text-foreground">{row.name}</span>,
+          },
+          {
+            key: "unit",
+            header: "Unit Type",
+            cell: (row) => {
+              const dotColor =
+                row.unitType === "kilogram"
+                  ? "bg-blue-400"
+                  : row.unitType === "metre"
+                  ? "bg-purple-400"
+                  : "bg-amber-400";
+              return (
+                <div className="flex items-center gap-1.5">
+                  <span className={cn("h-1.5 w-1.5 rounded-full", dotColor)} />
+                  <span className="capitalize text-muted-foreground">
+                    {row.unitType}
+                  </span>
+                </div>
+              );
+            },
+          },
+          {
+            key: "price",
+            header: "Price/unit",
+            className: "text-right",
+            cell: (row) => (
+              <span className="font-mono font-semibold text-foreground">
+                {formatNaira(row.pricePerUnitKobo)}
+              </span>
+            ),
+          },
+          {
+            key: "updated",
+            header: "Updated",
+            className: "hidden md:table-cell",
+            cell: (row) => (
+              <span className="text-xs text-muted-foreground">
+                {new Date(row.updatedAt).toLocaleDateString("en-NG", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
+            ),
+          },
+          {
+            key: "by",
+            header: "By",
+            className: "hidden lg:table-cell",
+            cell: (row) => (
+              <span className="text-xs text-muted-foreground">
+                {row.updatedBy?.name ?? "Unknown"}
+              </span>
+            ),
+          },
+          {
+            key: "actions",
+            header: "Actions",
+            className: "text-right",
+            cell: (row) => (
+              <div className="flex justify-end gap-1">
+                <Dialog
+                  open={editMat?.id === row.id}
+                  onOpenChange={(o) => setEditMat(o ? row : null)}
+                >
+                  <DialogTrigger
+                    render={
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground transition-colors">
+                        <Pencil className="h-4 w-4" />
+                        <span className="sr-only">Edit</span>
+                      </Button>
+                    }
+                  />
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Edit Material</DialogTitle>
+                    </DialogHeader>
+                    <MaterialForm
+                      defaultValues={{
+                        name: row.name,
+                        unitType: row.unitType as FormData["unitType"],
+                        pricePerUnitKobo: row.pricePerUnitKobo / 100,
+                      }}
+                      onSubmit={handleEdit}
+                      loading={loading}
+                    />
+                  </DialogContent>
+                </Dialog>
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
+                    }
+                  />
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete material?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will soft-delete "{row.name}". This action can be reversed by an admin.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          void handleDelete(row.id);
+                        }}
+                        className="bg-red-600 text-white hover:bg-red-700 transition-colors"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }

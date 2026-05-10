@@ -1,122 +1,159 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Eye, FileDown } from "lucide-react";
+import { Eye, FileDown, FileText } from "lucide-react";
 
 import { requireSession } from "@/lib/session";
 import { quotationRepository } from "@/repositories/quotation.repository";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
+import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
+import { formatNaira } from "@/lib/utils/money";
+import { cn } from "@/lib/utils/cn";
 
 export const metadata: Metadata = { title: "Quotations" };
-
-function formatNaira(kobo: number) {
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency: "NGN",
-    minimumFractionDigits: 0,
-  }).format(kobo / 100);
-}
 
 export default async function QuotationsPage() {
   await requireSession();
   const quotations = await quotationRepository.findAll();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Quotations</h1>
-        <p className="text-sm text-slate-500">{quotations.length} total quotations</p>
-      </div>
+    <div className="animate-fade-in space-y-6">
+      <PageHeader
+        title="Quotations"
+        description="All generated quotations"
+      />
 
-      <Card className="border-slate-200 shadow-sm">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50">
-                <TableHead>Reference</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Project Type</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Valid Until</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {quotations.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="py-12 text-center text-slate-400">
-                    No quotations yet. Generate one from a project page.
-                  </TableCell>
-                </TableRow>
+      <DataTable
+        data={quotations}
+        emptyMessage="No quotations yet. Generate one from a project page."
+        columns={[
+          {
+            key: "reference",
+            header: "Reference",
+            cell: (row) => (
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-inox-600" />
+                <span className="font-mono text-xs font-semibold text-inox-600">
+                  {row.reference}
+                </span>
+              </div>
+            ),
+          },
+          {
+            key: "customer",
+            header: "Customer",
+            cell: (row) => <span className="text-foreground">{row.project.customer.name}</span>,
+          },
+          {
+            key: "projectType",
+            header: "Project",
+            cell: (row) => <span className="text-muted-foreground">{row.project.projectType}</span>,
+          },
+          {
+            key: "total",
+            header: "Amount",
+            className: "text-right",
+            cell: (row) => (
+              <span className="font-mono font-semibold text-foreground">
+                {formatNaira(row.totalAmountKobo)}
+              </span>
+            ),
+          },
+          {
+            key: "issued",
+            header: "Issued",
+            className: "hidden md:table-cell",
+            cell: (row) => (
+              <span className="text-xs text-muted-foreground">
+                {new Date(row.createdAt).toLocaleDateString("en-NG", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
+            ),
+          },
+          {
+            key: "validUntil",
+            header: "Valid until",
+            className: "hidden md:table-cell",
+            cell: (row) => {
+              const isExpired = new Date(row.validUntil) < new Date();
+              return (
+                <span
+                  className={cn(
+                    "text-xs font-medium",
+                    isExpired ? "text-red-500 dark:text-red-400" : "text-muted-foreground"
+                  )}
+                >
+                  {new Date(row.validUntil).toLocaleDateString("en-NG", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+              );
+            },
+          },
+          {
+            key: "email",
+            header: "Email",
+            cell: (row) => (
+              row.emailedAt ? (
+                <span className="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200/60 dark:ring-emerald-700/40">
+                  Sent
+                </span>
               ) : (
-                quotations.map((q) => (
-                  <TableRow key={q.id} className="hover:bg-slate-50/50">
-                    <TableCell className="text-inox-700 font-mono font-medium">
-                      {q.reference}
-                    </TableCell>
-                    <TableCell>{q.project.customer.name}</TableCell>
-                    <TableCell className="text-slate-600">{q.project.projectType}</TableCell>
-                    <TableCell className="text-right font-mono">
-                      {formatNaira(q.totalAmountKobo)}
-                    </TableCell>
-                    <TableCell className="text-sm text-slate-500">
-                      {new Date(q.createdAt).toLocaleDateString("en-NG")}
-                    </TableCell>
-                    <TableCell className="text-sm text-slate-500">
-                      {new Date(q.validUntil).toLocaleDateString("en-NG")}
-                    </TableCell>
-                    <TableCell>
-                      {q.emailedAt ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                          Sent
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
-                          Not sent
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          render={
-                            <Link href={`/quotations/${q.id}`}>
-                              <Eye className="h-4 w-4" />
-                            </Link>
-                          }
-                          variant="ghost"
-                          size="sm"
-                        />
-                        {q.pdfUrl && (
-                          <Button
-                            render={
-                              <a href={q.pdfUrl} target="_blank" rel="noreferrer">
-                                <FileDown className="h-4 w-4" />
-                              </a>
-                            }
-                            variant="ghost"
-                            size="sm"
-                          />
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                <span className="inline-flex items-center rounded-full bg-muted/50 px-2.5 py-0.5 text-xs font-medium text-muted-foreground ring-1 ring-border">
+                  Not sent
+                </span>
+              )
+            ),
+          },
+          {
+            key: "actions",
+            header: "Actions",
+            className: "text-right",
+            cell: (row) => (
+              <div className="flex items-center justify-end gap-1">
+                <Button
+                  render={<Link href={`/quotations/${row.id}`} />}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground transition-colors hover:text-inox-600"
+                  title="View Details"
+                >
+                  <Eye className="h-4 w-4" />
+                  <span className="sr-only">View</span>
+                </Button>
+                {row.pdfUrl ? (
+                  <Button
+                    render={<a href={row.pdfUrl} target="_blank" rel="noreferrer" />}
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground transition-colors hover:text-inox-600"
+                    title="Download PDF"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    <span className="sr-only">PDF</span>
+                  </Button>
+                ) : (
+                  <Button
+                    render={<a href={`/api/quotations/${row.id}/pdf`} target="_blank" rel="noreferrer" />}
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground transition-colors hover:text-inox-600"
+                    title="Download PDF"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    <span className="sr-only">PDF</span>
+                  </Button>
+                )}
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }

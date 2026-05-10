@@ -1,133 +1,161 @@
+import {
+  BarChart2,
+  FolderOpen,
+  TrendingUp,
+  Users,
+  Plus,
+  ArrowRight,
+} from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { LayoutDashboard, Plus, Briefcase, TrendingUp, Calendar, DollarSign } from "lucide-react";
 
 import { requireSession } from "@/lib/session";
 import { projectRepository } from "@/repositories/project.repository";
 import { StatsCard } from "@/components/features/dashboard/stats-card";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatNaira, formatNairaCompact } from "@/lib/utils/money";
+import type { ProjectStatus } from "@/types";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-function formatNaira(kobo: number) {
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency: "NGN",
-    minimumFractionDigits: 0,
-  }).format(kobo / 100);
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-slate-100 text-slate-700",
-  quoted: "bg-blue-100 text-blue-700",
-  accepted: "bg-green-100 text-green-700",
-  rejected: "bg-red-100 text-red-700",
-  completed: "bg-inox-100 text-inox-700",
-};
-
 export default async function DashboardPage() {
-  await requireSession();
-  const stats = await projectRepository.getDashboardStats();
+  const session = await requireSession();
+  const stats   = await projectRepository.getDashboardStats();
+
+  const firstName = session.user.name?.split(" ")[0] ?? "there";
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <LayoutDashboard className="text-inox-600 h-7 w-7" />
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-            <p className="text-sm text-slate-500">Overview of your fabrication business</p>
-          </div>
-        </div>
-        <Button
-          render={<Link href="/projects/new" />}
-          className="bg-inox-600 hover:bg-inox-700 text-white"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          New Project
-        </Button>
-      </div>
+    <div className="animate-fade-in space-y-8">
+      <PageHeader
+        title={`Good ${getTimeOfDay()}, ${firstName} 👋`}
+        description="Here's what's happening with your business today."
+        action={
+          <Button
+            render={<Link href="/projects/new" />}
+            className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98]"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Project
+          </Button>
+        }
+      />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ── KPI grid ────────────────────────── */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatsCard
           label="Total Projects"
-          value={String(stats.totalProjects)}
-          icon={<Briefcase className="h-5 w-5" />}
+          value={stats.totalProjects}
+          icon={FolderOpen}
+          animateCount
+          description="All time"
         />
         <StatsCard
           label="Total Revenue"
-          value={formatNaira(stats.totalRevenueKobo)}
-          icon={<TrendingUp className="h-5 w-5" />}
-          deltaType="positive"
+          value={stats.totalRevenueKobo === 0 ? "₦0" : formatNairaCompact(stats.totalRevenueKobo)}
+          icon={TrendingUp}
+          description="Accepted & completed jobs"
+          iconColor="text-emerald-600"
         />
         <StatsCard
           label="Jobs This Month"
-          value={String(stats.monthProjects)}
-          icon={<Calendar className="h-5 w-5" />}
+          value={stats.monthProjects}
+          icon={BarChart2}
+          animateCount
+          description={new Date().toLocaleString("default", { month: "long", year: "numeric" })}
         />
         <StatsCard
-          label="Avg Job Value"
-          value={formatNaira(stats.avgJobValueKobo)}
-          icon={<DollarSign className="h-5 w-5" />}
+          label="Avg. Job Value"
+          value={stats.avgJobValueKobo === 0 ? "₦0" : formatNairaCompact(stats.avgJobValueKobo)}
+          icon={Users}
+          description="Per completed project"
+          iconColor="text-purple-600"
         />
       </div>
 
-      <Card className="border-slate-200 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base font-semibold text-slate-800">Recent Projects</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50">
-                <TableHead>Customer</TableHead>
-                <TableHead>Project Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Total Cost</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {stats.recentProjects.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-slate-400">
-                    No projects yet. Create your first project to get started.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                stats.recentProjects.map((project) => (
-                  <TableRow key={project.id} className="hover:bg-slate-50/50">
-                    <TableCell className="font-medium">{project.customer.name}</TableCell>
-                    <TableCell className="text-slate-600">{project.projectType}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_COLORS[project.status] ?? "bg-slate-100 text-slate-700"}`}
-                      >
-                        {project.status}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      {formatNaira(project.totalCostKobo)}
-                    </TableCell>
-                    <TableCell className="text-sm text-slate-500">
-                      {new Date(project.createdAt).toLocaleDateString("en-NG")}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      {/* ── Recent projects ──────────────────── */}
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-card transition-all duration-300 hover:shadow-card-md hover:-translate-y-0.5">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">
+              Recent Projects
+            </h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Your latest 5 projects
+            </p>
+          </div>
+          <Link
+            href="/projects"
+            className="flex items-center gap-1 text-xs font-medium text-inox-600 hover:text-inox-700 transition-colors"
+          >
+            View all
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        {stats.recentProjects.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <FolderOpen className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium text-foreground">
+              No projects yet
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Create your first project to get started.
+            </p>
+            <Button
+              render={<Link href="/projects/new" />}
+              size="sm"
+              className="mt-4 bg-inox-600 text-white hover:bg-inox-700 transition-all duration-200 active:scale-[0.98]"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              New Project
+            </Button>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {stats.recentProjects.map((project) => (
+              <Link
+                key={project.id}
+                href={`/projects/${project.id}`}
+                className="group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/30"
+              >
+                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-inox-50 dark:bg-inox-900/30 ring-1 ring-inox-200/50 dark:ring-inox-700/40">
+                  <FolderOpen className="h-4 w-4 text-inox-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground group-hover:text-inox-600 transition-colors">
+                    {project.projectType}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {project.customer.name} ·{" "}
+                    {new Date(project.createdAt).toLocaleDateString("en-NG", {
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </p>
+                </div>
+                <div className="flex flex-shrink-0 items-center gap-3">
+                  <StatusBadge status={project.status as ProjectStatus} />
+                  <span className="text-sm font-semibold text-foreground">
+                    {formatNaira(project.totalCostKobo)}
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
+}
+
+function getTimeOfDay(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "morning";
+  if (hour < 17) return "afternoon";
+  return "evening";
 }
