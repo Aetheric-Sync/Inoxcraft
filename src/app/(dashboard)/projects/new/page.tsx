@@ -498,7 +498,7 @@ export default function NewProjectPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-inox-50 border-inox-200">
+            <Card className="bg-inox-50 border-inox-200" data-testid="total-cost-preview">
               <CardHeader>
                 <CardTitle className="text-inox-700">Live Cost Preview</CardTitle>
               </CardHeader>

@@ -6,6 +6,7 @@ import { LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -44,10 +45,12 @@ export function UserNav({ user }: UserNavProps) {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" side="top" sideOffset={8}>
-        <DropdownMenuLabel>
-          <p className="text-sm font-medium">{user.name}</p>
-          <p className="text-muted-foreground text-xs">{user.email}</p>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>
+            <p className="text-sm font-medium">{user.name}</p>
+            <p className="text-muted-foreground text-xs">{user.email}</p>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
