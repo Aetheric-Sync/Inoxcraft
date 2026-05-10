@@ -14,6 +14,7 @@ const credentialsSchema = z.object({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  trustHost: true,
   providers: [
     Credentials({
       name: "credentials",
@@ -23,20 +24,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         const parsed = credentialsSchema.safeParse(credentials);
-        if (!parsed.success) return null;
+        if (!parsed.success) {
+          console.error("Auth: Invalid credentials schema", parsed.error.format());
+          return null;
+        }
 
-        const user = await userRepository.findByEmail(parsed.data.email);
-        if (!user?.passwordHash || user.deletedAt) return null;
+        try {
+          const user = await userRepository.findByEmail(parsed.data.email);
+          if (!user) {
+            console.warn(`Auth: User not found: ${parsed.data.email}`);
+            return null;
+          }
+          if (user.deletedAt) {
+            console.warn(`Auth: User account deleted: ${parsed.data.email}`);
+            return null;
+          }
 
-        const isValid = await bcrypt.compare(parsed.data.password, user.passwordHash);
-        if (!isValid) return null;
+          if (!user.passwordHash) {
+            console.error(`Auth: User has no password hash: ${parsed.data.email}`);
+            return null;
+          }
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
+          const isValid = await bcrypt.compare(parsed.data.password, user.passwordHash);
+          if (!isValid) {
+            console.warn(`Auth: Invalid password for: ${parsed.data.email}`);
+            return null;
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error("Auth: Database error during authorize", error);
+          return null;
+        }
       },
     }),
   ],
