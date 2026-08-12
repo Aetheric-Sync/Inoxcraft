@@ -6,7 +6,18 @@ import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, ChevronRight, ChevronLeft, Check, Calculator, Building2, Ruler, Cog, Hammer } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Trash2,
+  ChevronRight,
+  ChevronLeft,
+  Check,
+  Calculator,
+  Building2,
+  Ruler,
+  Hammer,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
@@ -56,7 +67,8 @@ const formSchema = z.object({
   transportCostNaira: z.coerce.number().min(0),
   profitMarginPct: z.coerce.number().min(0).max(40),
 });
-type FormData = z.infer<typeof formSchema>;
+type FormInput = z.input<typeof formSchema>;
+type FormData = z.output<typeof formSchema>;
 
 const COMPLEXITY_MULTIPLIERS: Record<string, number> = {
   standard: 1.0,
@@ -98,8 +110,8 @@ export default function NewProjectPage() {
     control,
     trigger,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema) as any,
+  } = useForm<FormInput, unknown, FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       complexity: "standard",
       profitMarginPct: 20,
@@ -111,19 +123,16 @@ export default function NewProjectPage() {
 
   const { fields, append, remove } = useFieldArray({ control, name: "materials" });
   const watchedMaterials = useWatch({ control, name: "materials" }) || [];
-  const labourNaira = useWatch({ control, name: "labourCostNaira" }) || 0;
-  const transportNaira = useWatch({ control, name: "transportCostNaira" }) || 0;
-  const profitPct = useWatch({ control, name: "profitMarginPct" }) || 0;
+  const labourNaira = Number(useWatch({ control, name: "labourCostNaira" })) || 0;
+  const transportNaira = Number(useWatch({ control, name: "transportCostNaira" })) || 0;
+  const profitPct = Number(useWatch({ control, name: "profitMarginPct" })) || 0;
   const complexity = useWatch({ control, name: "complexity" }) || "standard";
   const customerId = useWatch({ control, name: "customerId" });
   const projectType = useWatch({ control, name: "projectType" });
-  const dimensionL = useWatch({ control, name: "dimensionL" });
-  const dimensionW = useWatch({ control, name: "dimensionW" });
-  const dimensionH = useWatch({ control, name: "dimensionH" });
 
-  const materialCostNaira = watchedMaterials.reduce((sum: number, line: any) => {
-    const mat = allMaterials.find((m: any) => m.id === line.materialId);
-    return sum + (mat ? (mat.pricePerUnitKobo / 100) * (line.quantity || 0) : 0);
+  const materialCostNaira = watchedMaterials.reduce((sum, line) => {
+    const mat = allMaterials.find((m) => m.id === line.materialId);
+    return sum + (mat ? (mat.pricePerUnitKobo / 100) * (Number(line.quantity) || 0) : 0);
   }, 0);
 
   const baseCost = materialCostNaira + Number(labourNaira) + Number(transportNaira);
@@ -180,13 +189,13 @@ export default function NewProjectPage() {
       2: ["materials"],
       3: ["labourCostNaira", "transportCostNaira", "profitMarginPct"],
     };
-    
+
     // For the final step, just submit
     if (step === STEPS.length - 1) {
       void handleSubmit(onSubmit)();
       return;
     }
-    
+
     const ok = await trigger(fieldsToValidate[step]);
     if (ok) {
       if (step === 0) void loadMaterials();
@@ -209,7 +218,7 @@ export default function NewProjectPage() {
           labourCostKobo: Math.round(data.labourCostNaira * 100),
           transportCostKobo: Math.round(data.transportCostNaira * 100),
           profitMarginPct: data.profitMarginPct,
-          materials: data.materials.map((m: any) => ({
+          materials: data.materials.map((m) => ({
             materialId: m.materialId,
             quantity: m.quantity,
           })),
@@ -230,40 +239,47 @@ export default function NewProjectPage() {
   };
 
   return (
-    <div className="grid lg:grid-cols-12 gap-8 h-full min-h-[calc(100vh-8rem)]">
+    <div className="grid h-full min-h-[calc(100vh-8rem)] gap-8 lg:grid-cols-12">
       {/* ── Left Column: Form ────────────────────────────────────────────── */}
-      <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
+      <div className="flex flex-col lg:col-span-7 xl:col-span-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Create New Project</h1>
-          <p className="mt-2 text-muted-foreground">Follow the steps below to set up a new project and generate its initial quotation.</p>
+          <h1 className="text-foreground text-3xl font-bold tracking-tight">Create New Project</h1>
+          <p className="text-muted-foreground mt-2">
+            Follow the steps below to set up a new project and generate its initial quotation.
+          </p>
         </div>
 
         {/* Progress Steps */}
         <div className="relative mb-12">
-          <div className="absolute top-1/2 left-0 w-full h-0.5 -translate-y-1/2 bg-muted/50 rounded-full" />
+          <div className="bg-muted/50 absolute top-1/2 left-0 h-0.5 w-full -translate-y-1/2 rounded-full" />
           <div className="relative flex justify-between">
-            {STEPS.map((s: any, i: number) => {
+            {STEPS.map((s, i) => {
               const Icon = s.icon;
               const isCompleted = i < step;
               const isActive = i === step;
               return (
-                <div key={s.id} className="flex flex-col items-center gap-3 bg-neutral-50 dark:bg-neutral-950 px-2 relative z-10">
+                <div
+                  key={s.id}
+                  className="relative z-10 flex flex-col items-center gap-3 bg-neutral-50 px-2 dark:bg-neutral-950"
+                >
                   <div
                     className={cn(
                       "flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-500",
-                      isCompleted 
-                        ? "border-inox-600 bg-inox-600 text-white shadow-inox shadow-inox-500/20" 
-                        : isActive 
-                        ? "border-inox-600 bg-background text-inox-600 shadow-sm" 
-                        : "border-muted bg-muted/20 text-muted-foreground"
+                      isCompleted
+                        ? "border-inox-600 bg-inox-600 shadow-inox shadow-inox-500/20 text-white"
+                        : isActive
+                          ? "border-inox-600 bg-background text-inox-600 shadow-sm"
+                          : "border-muted bg-muted/20 text-muted-foreground",
                     )}
                   >
                     {isCompleted ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
                   </div>
-                  <span className={cn(
-                    "text-xs font-semibold uppercase tracking-wider transition-colors duration-200 hidden sm:block",
-                    isActive || isCompleted ? "text-foreground" : "text-muted-foreground"
-                  )}>
+                  <span
+                    className={cn(
+                      "hidden text-xs font-semibold tracking-wider uppercase transition-colors duration-200 sm:block",
+                      isActive || isCompleted ? "text-foreground" : "text-muted-foreground",
+                    )}
+                  >
                     {s.title}
                   </span>
                 </div>
@@ -278,7 +294,7 @@ export default function NewProjectPage() {
             onSubmit={(e) => {
               e.preventDefault();
             }}
-            className="h-full flex flex-col"
+            className="flex h-full flex-col"
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -294,9 +310,11 @@ export default function NewProjectPage() {
                   <div className="space-y-6">
                     <div className="space-y-1">
                       <h2 className="text-xl font-semibold">Select Customer</h2>
-                      <p className="text-sm text-muted-foreground">Search for an existing customer or create a new one.</p>
+                      <p className="text-muted-foreground text-sm">
+                        Search for an existing customer or create a new one.
+                      </p>
                     </div>
-                    
+
                     <div className="space-y-4">
                       <div className="space-y-1.5">
                         <Label htmlFor="cust-search">Search customer</Label>
@@ -313,16 +331,16 @@ export default function NewProjectPage() {
                           />
                         </div>
                       </div>
-                      
+
                       {customers.length > 0 && (
-                        <Card className="max-h-40 overflow-y-auto border-border shadow-sm">
-                          <div className="divide-y divide-border">
-                            {customers.map((c: any) => (
+                        <Card className="border-border max-h-40 overflow-y-auto shadow-sm">
+                          <div className="divide-border divide-y">
+                            {customers.map((c) => (
                               <div
                                 key={c.id}
                                 role="button"
                                 tabIndex={0}
-                                className="w-full cursor-pointer px-4 py-3 text-left text-sm transition-colors hover:bg-inox-50 dark:hover:bg-inox-950/30 hover:text-inox-600"
+                                className="hover:bg-inox-50 dark:hover:bg-inox-950/30 hover:text-inox-600 w-full cursor-pointer px-4 py-3 text-left text-sm transition-colors"
                                 onClick={() => {
                                   setValue("customerId", c.id);
                                   setSelectedCustomerName(c.name);
@@ -346,31 +364,39 @@ export default function NewProjectPage() {
                       )}
 
                       {customerId && (
-                        <div className="rounded-lg border border-inox-200 bg-inox-50/50 dark:bg-inox-950/20 dark:border-inox-900 px-4 py-3 flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-inox-100 dark:bg-inox-900 flex items-center justify-center text-inox-600">
+                        <div className="border-inox-200 bg-inox-50/50 dark:bg-inox-950/20 dark:border-inox-900 flex items-center gap-3 rounded-lg border px-4 py-3">
+                          <div className="bg-inox-100 dark:bg-inox-900 text-inox-600 flex h-8 w-8 items-center justify-center rounded-full">
                             <Check className="h-4 w-4" />
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Selected Customer</p>
-                            <p className="text-sm font-semibold text-foreground">{selectedCustomerName}</p>
+                            <p className="text-muted-foreground mb-0.5 text-xs font-medium tracking-wider uppercase">
+                              Selected Customer
+                            </p>
+                            <p className="text-foreground text-sm font-semibold">
+                              {selectedCustomerName}
+                            </p>
                           </div>
                         </div>
                       )}
-                      
+
                       {errors.customerId && (
-                        <p className="text-sm text-destructive font-medium">{errors.customerId.message}</p>
+                        <p className="text-destructive text-sm font-medium">
+                          {errors.customerId.message}
+                        </p>
                       )}
 
                       <div className="relative py-4">
                         <div className="absolute inset-0 flex items-center">
-                          <span className="w-full border-t border-muted" />
+                          <span className="border-muted w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-neutral-50 dark:bg-neutral-950 px-2 text-muted-foreground font-semibold">Or create new</span>
+                          <span className="text-muted-foreground bg-neutral-50 px-2 font-semibold dark:bg-neutral-950">
+                            Or create new
+                          </span>
                         </div>
                       </div>
 
-                      <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-1.5">
                           <Label>Full name *</Label>
                           <Input
@@ -413,28 +439,36 @@ export default function NewProjectPage() {
                   <div className="space-y-6">
                     <div className="space-y-1">
                       <h2 className="text-xl font-semibold">Project Details</h2>
-                      <p className="text-sm text-muted-foreground">Specify the dimensions and complexity of the project.</p>
+                      <p className="text-muted-foreground text-sm">
+                        Specify the dimensions and complexity of the project.
+                      </p>
                     </div>
-                    
+
                     <div className="grid gap-6">
                       <div className="space-y-1.5">
                         <Label>Project type *</Label>
                         <Input
                           {...register("projectType")}
                           placeholder="e.g. Stainless Steel Kitchen Sink"
-                          className="bg-white dark:bg-neutral-900 text-lg py-6"
+                          className="bg-white py-6 text-lg dark:bg-neutral-900"
                         />
                         {errors.projectType && (
-                          <p className="text-xs text-destructive">{errors.projectType.message}</p>
+                          <p className="text-destructive text-xs">{errors.projectType.message}</p>
                         )}
                       </div>
 
-                      <div className="grid sm:grid-cols-3 gap-4">
+                      <div className="grid gap-4 sm:grid-cols-3">
                         {(["dimensionL", "dimensionW", "dimensionH"] as const).map((d, i) => (
                           <div key={d} className="space-y-1.5">
                             <Label>{["Length", "Width", "Height"][i]} (mm)</Label>
-                            <Input type="number" {...register(d)} className="bg-white dark:bg-neutral-900" />
-                            {errors[d] && <p className="text-xs text-destructive">{(errors[d] as any)?.message}</p>}
+                            <Input
+                              type="number"
+                              {...register(d)}
+                              className="bg-white dark:bg-neutral-900"
+                            />
+                            {errors[d] && (
+                              <p className="text-destructive text-xs">{errors[d]?.message}</p>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -460,11 +494,11 @@ export default function NewProjectPage() {
 
                       <div className="space-y-1.5">
                         <Label>Notes & Special Requirements</Label>
-                        <Textarea 
-                          {...register("notes")} 
-                          rows={4} 
-                          className="bg-white dark:bg-neutral-900 resize-none"
-                          placeholder="Any specific design requirements, delivery details, or client preferences..." 
+                        <Textarea
+                          {...register("notes")}
+                          rows={4}
+                          className="resize-none bg-white dark:bg-neutral-900"
+                          placeholder="Any specific design requirements, delivery details, or client preferences..."
                         />
                       </div>
                     </div>
@@ -474,10 +508,12 @@ export default function NewProjectPage() {
                 {/* STEP 3: Materials */}
                 {step === 2 && (
                   <div className="space-y-6">
-                    <div className="space-y-1 flex items-center justify-between">
+                    <div className="flex items-center justify-between space-y-1">
                       <div>
                         <h2 className="text-xl font-semibold">Materials Required</h2>
-                        <p className="text-sm text-muted-foreground">List all raw materials needed for fabrication.</p>
+                        <p className="text-muted-foreground text-sm">
+                          List all raw materials needed for fabrication.
+                        </p>
                       </div>
                       <Button
                         type="button"
@@ -491,31 +527,39 @@ export default function NewProjectPage() {
                     </div>
 
                     <div className="space-y-3">
-                      {fields.map((field: any, idx: number) => {
-                        const mat = allMaterials.find((m) => m.id === watchedMaterials[idx]?.materialId);
+                      {fields.map((field, idx) => {
+                        const mat = allMaterials.find(
+                          (m) => m.id === watchedMaterials[idx]?.materialId,
+                        );
                         const lineTotal = mat
-                          ? (mat.pricePerUnitKobo / 100) * (watchedMaterials[idx]?.quantity ?? 0)
+                          ? (mat.pricePerUnitKobo / 100) *
+                            (Number(watchedMaterials[idx]?.quantity) || 0)
                           : 0;
-                        
+
                         return (
-                          <div key={field.id} className="flex items-end gap-3 p-3 sm:p-4 rounded-xl border border-border bg-white dark:bg-neutral-900 shadow-sm transition-all hover:border-inox-200">
+                          <div
+                            key={field.id}
+                            className="border-border hover:border-inox-200 flex items-end gap-3 rounded-xl border bg-white p-3 shadow-sm transition-all sm:p-4 dark:bg-neutral-900"
+                          >
                             <div className="flex-1 space-y-1.5">
-                              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Material</Label>
+                              <Label className="text-muted-foreground text-xs tracking-wider uppercase">
+                                Material
+                              </Label>
                               <Select
-                                value={watchedMaterials[idx]?.materialId || ""}
+                                value={watchedMaterials[idx]?.materialId ?? ""}
                                 onValueChange={(v) => {
                                   if (v) setValue(`materials.${idx}.materialId`, v);
                                 }}
                               >
-                                <SelectTrigger className="w-full border-0 shadow-none bg-muted/30 hover:bg-muted/50 focus:ring-0">
+                                <SelectTrigger className="bg-muted/30 hover:bg-muted/50 w-full border-0 shadow-none focus:ring-0">
                                   <SelectValue placeholder="Select material…" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {allMaterials.map((m: any) => (
+                                  {allMaterials.map((m) => (
                                     <SelectItem key={m.id} value={m.id}>
                                       <div className="flex flex-col py-0.5">
                                         <span className="font-medium">{m.name}</span>
-                                        <span className="text-[10px] text-muted-foreground uppercase tracking-tight">
+                                        <span className="text-muted-foreground text-[10px] tracking-tight uppercase">
                                           {formatNaira(m.pricePerUnitKobo / 100)} / {m.unitType}
                                         </span>
                                       </div>
@@ -524,21 +568,23 @@ export default function NewProjectPage() {
                                 </SelectContent>
                               </Select>
                             </div>
-                            
-                            <div className="w-20 sm:w-24 space-y-1.5">
-                              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Qty</Label>
-                              <Input 
-                                type="number" 
-                                {...register(`materials.${idx}.quantity`)} 
-                                min={1} 
-                                className="border-0 shadow-none bg-muted/30 hover:bg-muted/50 focus-visible:ring-0 text-center"
+
+                            <div className="w-20 space-y-1.5 sm:w-24">
+                              <Label className="text-muted-foreground text-xs tracking-wider uppercase">
+                                Qty
+                              </Label>
+                              <Input
+                                type="number"
+                                {...register(`materials.${idx}.quantity`)}
+                                min={1}
+                                className="bg-muted/30 hover:bg-muted/50 border-0 text-center shadow-none focus-visible:ring-0"
                               />
                             </div>
-                            
-                            <div className="w-24 sm:w-32 pb-2.5 text-right font-mono text-sm font-medium">
+
+                            <div className="w-24 pb-2.5 text-right font-mono text-sm font-medium sm:w-32">
                               {formatNaira(lineTotal)}
                             </div>
-                            
+
                             <Button
                               type="button"
                               variant="ghost"
@@ -551,9 +597,9 @@ export default function NewProjectPage() {
                           </div>
                         );
                       })}
-                      
+
                       {errors.materials && (
-                        <p className="text-sm text-destructive font-medium px-2 mt-2">
+                        <p className="text-destructive mt-2 px-2 text-sm font-medium">
                           {errors.materials.message ?? "Please add at least one material"}
                         </p>
                       )}
@@ -566,40 +612,46 @@ export default function NewProjectPage() {
                   <div className="space-y-6">
                     <div className="space-y-1">
                       <h2 className="text-xl font-semibold">Costs & Margins</h2>
-                      <p className="text-sm text-muted-foreground">Set your operational costs and desired profit margin.</p>
+                      <p className="text-muted-foreground text-sm">
+                        Set your operational costs and desired profit margin.
+                      </p>
                     </div>
-                    
+
                     <div className="grid gap-6">
-                      <div className="space-y-4 p-5 rounded-xl border border-border bg-white dark:bg-neutral-900 shadow-sm">
+                      <div className="border-border space-y-4 rounded-xl border bg-white p-5 shadow-sm dark:bg-neutral-900">
                         <div className="space-y-1.5">
                           <Label className="text-sm font-semibold">Labour Cost (₦)</Label>
-                          <p className="text-xs text-muted-foreground mb-2">Estimated cost for fabrication and assembly.</p>
-                          <Input 
-                            type="number" 
-                            {...register("labourCostNaira")} 
-                            min={0} 
-                            className="text-lg py-6 max-w-sm font-mono"
+                          <p className="text-muted-foreground mb-2 text-xs">
+                            Estimated cost for fabrication and assembly.
+                          </p>
+                          <Input
+                            type="number"
+                            {...register("labourCostNaira")}
+                            min={0}
+                            className="max-w-sm py-6 font-mono text-lg"
                           />
                         </div>
                       </div>
-                      
-                      <div className="space-y-4 p-5 rounded-xl border border-border bg-white dark:bg-neutral-900 shadow-sm">
+
+                      <div className="border-border space-y-4 rounded-xl border bg-white p-5 shadow-sm dark:bg-neutral-900">
                         <div className="space-y-1.5">
                           <Label className="text-sm font-semibold">Transport Cost (₦)</Label>
-                          <p className="text-xs text-muted-foreground mb-2">Estimated cost for delivery and installation.</p>
-                          <Input 
-                            type="number" 
-                            {...register("transportCostNaira")} 
-                            min={0} 
-                            className="text-lg py-6 max-w-sm font-mono"
+                          <p className="text-muted-foreground mb-2 text-xs">
+                            Estimated cost for delivery and installation.
+                          </p>
+                          <Input
+                            type="number"
+                            {...register("transportCostNaira")}
+                            min={0}
+                            className="max-w-sm py-6 font-mono text-lg"
                           />
                         </div>
                       </div>
-                      
-                      <div className="space-y-4 p-5 rounded-xl border border-border bg-white dark:bg-neutral-900 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
+
+                      <div className="border-border space-y-4 rounded-xl border bg-white p-5 shadow-sm dark:bg-neutral-900">
+                        <div className="mb-2 flex items-center justify-between">
                           <Label className="text-sm font-semibold">Profit Margin</Label>
-                          <span className="inline-flex items-center justify-center rounded-full bg-inox-100 dark:bg-inox-900/50 px-3 py-1 text-sm font-bold text-inox-700 dark:text-inox-400">
+                          <span className="bg-inox-100 dark:bg-inox-900/50 text-inox-700 dark:text-inox-400 inline-flex items-center justify-center rounded-full px-3 py-1 text-sm font-bold">
                             {profitPct}%
                           </span>
                         </div>
@@ -609,9 +661,9 @@ export default function NewProjectPage() {
                           min={0}
                           max={40}
                           step={1}
-                          className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-inox-600"
+                          className="bg-muted accent-inox-600 h-2 w-full cursor-pointer appearance-none rounded-lg"
                         />
-                        <div className="flex justify-between text-xs text-muted-foreground mt-2 font-medium">
+                        <div className="text-muted-foreground mt-2 flex justify-between text-xs font-medium">
                           <span>0%</span>
                           <span>20%</span>
                           <span>40%</span>
@@ -624,7 +676,7 @@ export default function NewProjectPage() {
             </AnimatePresence>
 
             {/* Navigation Buttons */}
-            <div className="mt-auto pt-8 flex items-center justify-between border-t border-border/50">
+            <div className="border-border/50 mt-auto flex items-center justify-between border-t pt-8">
               <Button
                 type="button"
                 variant="outline"
@@ -636,20 +688,24 @@ export default function NewProjectPage() {
                 <ChevronLeft className="mr-2 h-4 w-4" />
                 Back
               </Button>
-              
+
               <Button
                 type="button"
                 size="lg"
                 onClick={() => void goNext()}
                 disabled={submitting}
-                className="w-40 bg-inox-600 hover:bg-inox-700 text-white shadow-inox transition-all active:scale-[0.98]"
+                className="bg-inox-600 hover:bg-inox-700 shadow-inox w-40 text-white transition-all active:scale-[0.98]"
               >
                 {submitting ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : step === STEPS.length - 1 ? (
-                  <>Create Project <Check className="ml-2 h-4 w-4" /></>
+                  <>
+                    Create Project <Check className="ml-2 h-4 w-4" />
+                  </>
                 ) : (
-                  <>Next Step <ChevronRight className="ml-2 h-4 w-4" /></>
+                  <>
+                    Next Step <ChevronRight className="ml-2 h-4 w-4" />
+                  </>
                 )}
               </Button>
             </div>
@@ -658,31 +714,34 @@ export default function NewProjectPage() {
       </div>
 
       {/* ── Right Column: Live Summary ─────────────────────────────────────── */}
-      <div className="hidden lg:block lg:col-span-5 xl:col-span-4">
+      <div className="hidden lg:col-span-5 lg:block xl:col-span-4">
         <div className="sticky top-6">
-          <Card className="border-border shadow-card-lg overflow-hidden bg-white/50 dark:bg-neutral-900/50 backdrop-blur-xl">
-            <div className="h-2 w-full bg-inox-gradient" />
+          <Card className="border-border shadow-card-lg overflow-hidden bg-white/50 backdrop-blur-xl dark:bg-neutral-900/50">
+            <div className="bg-inox-gradient h-2 w-full" />
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Calculator className="h-5 w-5 text-inox-600" />
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Calculator className="text-inox-600 h-5 w-5" />
                 Live Cost Preview
               </CardTitle>
               <CardDescription>Real-time calculation based on your inputs</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              
               {/* Context Summary */}
               {(selectedCustomerName || projectType) && (
-                <div className="bg-muted/30 rounded-xl p-4 space-y-3 border border-border/50">
+                <div className="bg-muted/30 border-border/50 space-y-3 rounded-xl border p-4">
                   {selectedCustomerName && (
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">Customer</p>
+                      <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-wider uppercase">
+                        Customer
+                      </p>
                       <p className="text-sm font-medium">{selectedCustomerName}</p>
                     </div>
                   )}
                   {projectType && (
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-1">Project</p>
+                      <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-wider uppercase">
+                        Project
+                      </p>
                       <p className="text-sm font-medium">{projectType}</p>
                     </div>
                   )}
@@ -691,28 +750,36 @@ export default function NewProjectPage() {
 
               {/* Cost Breakdown */}
               <div className="space-y-3">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Cost Breakdown</p>
+                <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                  Cost Breakdown
+                </p>
                 <div className="space-y-2.5 text-sm">
-                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                     <span className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
                       Materials
                     </span>
-                    <span className="font-mono font-medium text-foreground">{formatNaira(materialCostNaira)}</span>
+                    <span className="text-foreground font-mono font-medium">
+                      {formatNaira(materialCostNaira)}
+                    </span>
                   </div>
-                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                     <span className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
                       Labour
                     </span>
-                    <span className="font-mono font-medium text-foreground">{formatNaira(Number(labourNaira))}</span>
+                    <span className="text-foreground font-mono font-medium">
+                      {formatNaira(Number(labourNaira))}
+                    </span>
                   </div>
-                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                     <span className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />
                       Transport
                     </span>
-                    <span className="font-mono font-medium text-foreground">{formatNaira(Number(transportNaira))}</span>
+                    <span className="text-foreground font-mono font-medium">
+                      {formatNaira(Number(transportNaira))}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -721,29 +788,43 @@ export default function NewProjectPage() {
 
               {/* Adjustments */}
               <div className="space-y-3">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Adjustments</p>
+                <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                  Adjustments
+                </p>
                 <div className="space-y-2.5 text-sm">
-                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                     <span>Complexity ({complexity})</span>
-                    <span className="font-mono font-medium text-foreground">× {COMPLEXITY_MULTIPLIERS[complexity]}</span>
+                    <span className="text-foreground font-mono font-medium">
+                      × {COMPLEXITY_MULTIPLIERS[complexity]}
+                    </span>
                   </div>
-                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
-                    <span className="flex items-center gap-1">Profit Margin <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded text-[10px] font-bold">{profitPct}%</span></span>
-                    <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">+{formatNaira(profit)}</span>
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                    <span className="flex items-center gap-1">
+                      Profit Margin{" "}
+                      <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                        {profitPct}%
+                      </span>
+                    </span>
+                    <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                      +{formatNaira(profit)}
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Total */}
-              <div className="pt-4 border-t-2 border-dashed border-border mt-2">
-                <div className="flex justify-between items-end">
+              <div className="border-border mt-2 border-t-2 border-dashed pt-4">
+                <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Total Quotation</p>
-                    <p className="text-3xl font-bold tracking-tight text-foreground">{formatNaira(total)}</p>
+                    <p className="text-muted-foreground mb-1 text-sm font-medium">
+                      Total Quotation
+                    </p>
+                    <p className="text-foreground text-3xl font-bold tracking-tight">
+                      {formatNaira(total)}
+                    </p>
                   </div>
                 </div>
               </div>
-              
             </CardContent>
           </Card>
         </div>

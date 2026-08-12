@@ -13,14 +13,12 @@ export async function DashboardLayout({ children }: { children: React.ReactNode 
       {/* ── Main ──────────────────────────────── */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar (desktop only) */}
-        <header className="hidden items-center justify-end border-b border-border bg-background px-6 py-3 lg:flex">
+        <header className="border-border bg-background hidden items-center justify-end border-b px-6 py-3 lg:flex">
           <ThemeToggle />
         </header>
 
         <main className="flex-1 overflow-y-auto pt-16 lg:pt-0">
-          <div className="page-container py-6 lg:py-8">
-            {children}
-          </div>
+          <div className="page-container py-6 lg:py-8">{children}</div>
         </main>
       </div>
     </div>

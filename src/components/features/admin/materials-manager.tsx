@@ -93,8 +93,12 @@ function MaterialForm({
     >
       <div className="space-y-1.5">
         <Label>Name</Label>
-        <Input {...register("name")} placeholder="304 Stainless Sheet" className="transition-shadow focus:shadow-glow" />
-        {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+        <Input
+          {...register("name")}
+          placeholder="304 Stainless Sheet"
+          className="focus:shadow-glow transition-shadow"
+        />
+        {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
       </div>
       <div className="space-y-1.5">
         <Label>Unit Type</Label>
@@ -104,7 +108,7 @@ function MaterialForm({
             if (v) setValue("unitType", v);
           }}
         >
-          <SelectTrigger className="transition-shadow focus:shadow-glow">
+          <SelectTrigger className="focus:shadow-glow transition-shadow">
             <SelectValue placeholder="Select unit" />
           </SelectTrigger>
           <SelectContent>
@@ -115,21 +119,28 @@ function MaterialForm({
             ))}
           </SelectContent>
         </Select>
-        {errors.unitType && <p className="text-xs text-destructive">{errors.unitType.message}</p>}
+        {errors.unitType && <p className="text-destructive text-xs">{errors.unitType.message}</p>}
       </div>
       <div className="space-y-1.5">
         <Label>Price per unit (₦)</Label>
-        <Input type="number" {...register("pricePerUnitKobo")} placeholder="5000" className="transition-shadow focus:shadow-glow" />
+        <Input
+          type="number"
+          {...register("pricePerUnitKobo")}
+          placeholder="5000"
+          className="focus:shadow-glow transition-shadow"
+        />
         {errors.pricePerUnitKobo && (
-          <p className="text-xs text-destructive">{errors.pricePerUnitKobo.message}</p>
+          <p className="text-destructive text-xs">{errors.pricePerUnitKobo.message}</p>
         )}
       </div>
       <Button
         type="submit"
-        className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98] w-full"
+        className="bg-inox-600 shadow-inox hover:bg-inox-700 w-full text-white transition-all duration-200 active:scale-[0.98]"
         disabled={loading}
       >
-        {loading && <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white/30 border-t-white" />}
+        {loading && (
+          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+        )}
         Save Material
       </Button>
     </form>
@@ -209,7 +220,7 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogTrigger
             render={
-              <Button className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98]">
+              <Button className="bg-inox-600 shadow-inox hover:bg-inox-700 text-white transition-all duration-200 active:scale-[0.98]">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Material
               </Button>
@@ -231,26 +242,26 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
           {
             key: "name",
             header: "Material",
-            cell: (row) => <span className="font-medium text-foreground">{row.name}</span>,
+            cell: (row) => <span className="text-foreground font-medium">{row.name}</span>,
           },
           {
             key: "unit",
             header: "Unit Type",
             cell: (row) => {
-                  const dotColor =
-                    row.unitType === "kg"
-                      ? "bg-blue-400"
-                      : row.unitType === "metre"
-                      ? "bg-purple-400"
-                      : "bg-amber-400";
-                  return (
-                    <div className="flex items-center gap-1.5">
-                      <span className={cn("h-1.5 w-1.5 rounded-full", dotColor)} />
-                      <span className="capitalize text-muted-foreground">
-                        {row.unitType === "kg" ? "kilogram" : row.unitType}
-                      </span>
-                    </div>
-                  );
+              const dotColor =
+                row.unitType === "kg"
+                  ? "bg-blue-400"
+                  : row.unitType === "metre"
+                    ? "bg-purple-400"
+                    : "bg-amber-400";
+              return (
+                <div className="flex items-center gap-1.5">
+                  <span className={cn("h-1.5 w-1.5 rounded-full", dotColor)} />
+                  <span className="text-muted-foreground capitalize">
+                    {row.unitType === "kg" ? "kilogram" : row.unitType}
+                  </span>
+                </div>
+              );
             },
           },
           {
@@ -258,7 +269,7 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
             header: "Price/unit",
             className: "text-right",
             cell: (row) => (
-              <span className="font-mono font-semibold text-foreground">
+              <span className="text-foreground font-mono font-semibold">
                 {formatNaira(row.pricePerUnitKobo)}
               </span>
             ),
@@ -268,7 +279,7 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
             header: "Updated",
             className: "hidden md:table-cell",
             cell: (row) => (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 {new Date(row.updatedAt).toLocaleDateString("en-NG", {
                   day: "numeric",
                   month: "short",
@@ -282,7 +293,7 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
             header: "By",
             className: "hidden lg:table-cell",
             cell: (row) => (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 {row.updatedBy?.name ?? "Unknown"}
               </span>
             ),
@@ -299,7 +310,11 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
                 >
                   <DialogTrigger
                     render={
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground transition-colors">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-foreground h-8 w-8 transition-colors"
+                      >
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Edit</span>
                       </Button>
@@ -326,7 +341,7 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive h-8 w-8 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Delete</span>
@@ -337,7 +352,8 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete material?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will soft-delete "{row.name}". This action can be reversed by an admin.
+                        This will soft-delete &quot;{row.name}&quot;. This action can be reversed by
+                        an admin.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -346,7 +362,7 @@ export function MaterialsManager({ initialMaterials }: { initialMaterials: Mater
                         onClick={() => {
                           void handleDelete(row.id);
                         }}
-                        className="bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        className="bg-red-600 text-white transition-colors hover:bg-red-700"
                       >
                         Delete
                       </AlertDialogAction>

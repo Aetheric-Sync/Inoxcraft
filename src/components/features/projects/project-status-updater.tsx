@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -24,11 +24,13 @@ export function ProjectStatusUpdater({ projectId, currentStatus }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [value, setValue] = useState(currentStatus);
+  const [syncedStatus, setSyncedStatus] = useState(currentStatus);
 
-  // Sync local state with prop if it changes externally
-  useEffect(() => {
+  // Sync local state with prop if it changes externally (e.g. after router.refresh())
+  if (currentStatus !== syncedStatus) {
+    setSyncedStatus(currentStatus);
     setValue(currentStatus);
-  }, [currentStatus]);
+  }
 
   const handleChange = async (status: string) => {
     const previousStatus = value;

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { Layers, Eye, EyeOff, ArrowRight, Lock, Mail } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import { loginSchema, type LoginInput } from "@/lib/validators/auth.schema";
@@ -24,7 +25,7 @@ const features = [
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading,    setIsLoading   ] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const {
@@ -37,7 +38,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const result = await signIn("credentials", {
-        email:    data.email,
+        email: data.email,
         password: data.password,
         redirect: false,
       });
@@ -64,25 +65,30 @@ export default function LoginPage() {
         <div
           className="absolute inset-0 opacity-5"
           style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+            backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
             backgroundSize: "32px 32px",
           }}
         />
         {/* gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-inox-900/60 via-transparent to-neutral-950/80" />
+        <div className="from-inox-900/60 absolute inset-0 bg-gradient-to-br via-transparent to-neutral-950/80" />
 
         <div className="relative z-10 flex flex-1 flex-col justify-between p-10">
           {/* logo */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center overflow-hidden rounded-xl shadow-inox bg-white p-1">
-              <img src="/images/logo.png" alt="Logo" className="h-10 w-auto object-contain" />
+            <div className="shadow-inox flex items-center justify-center overflow-hidden rounded-xl bg-white p-1">
+              <Image
+                src="/images/logo.png"
+                alt="Logo"
+                width={1408}
+                height={768}
+                className="h-10 w-auto object-contain"
+              />
             </div>
             <div>
-              <p className="text-sm font-bold leading-none text-white uppercase tracking-tight">
+              <p className="text-sm leading-none font-bold tracking-tight text-white uppercase">
                 INOXCRAFT
               </p>
-              <p className="text-[10px] font-medium uppercase tracking-widest text-neutral-500">
+              <p className="text-[10px] font-medium tracking-widest text-neutral-500 uppercase">
                 Fabrication Suite
               </p>
             </div>
@@ -95,14 +101,14 @@ export default function LoginPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <h1 className="text-4xl font-bold leading-tight text-white">
+              <h1 className="text-4xl leading-tight font-bold text-white">
                 Run your fabrication
                 <br />
                 <span className="gradient-text">business smarter.</span>
               </h1>
               <p className="mt-3 text-base leading-relaxed text-neutral-400">
-                Generate professional quotations, track projects, and grow your
-                stainless steel fabrication business — all in one place.
+                Generate professional quotations, track projects, and grow your stainless steel
+                fabrication business — all in one place.
               </p>
             </motion.div>
 
@@ -121,9 +127,7 @@ export default function LoginPage() {
                   transition={{ delay: 0.3 + i * 0.08 }}
                 >
                   <span className="text-lg">{f.icon}</span>
-                  <span className="text-sm font-medium text-neutral-200">
-                    {f.label}
-                  </span>
+                  <span className="text-sm font-medium text-neutral-200">{f.label}</span>
                 </motion.div>
               ))}
             </motion.div>
@@ -131,13 +135,13 @@ export default function LoginPage() {
 
           {/* footer */}
           <p className="text-xs text-neutral-600">
-            © {new Date().getFullYear()} HAKEEM'S INOXCRAFT. All rights reserved.
+            © {new Date().getFullYear()} HAKEEM&apos;S INOXCRAFT. All rights reserved.
           </p>
         </div>
       </div>
 
       {/* ── Right panel (form) ─────────────────── */}
-      <div className="flex flex-1 items-center justify-center bg-background px-4 py-12">
+      <div className="bg-background flex flex-1 items-center justify-center px-4 py-12">
         <motion.div
           className="w-full max-w-[380px] space-y-8"
           initial={{ opacity: 0, y: 16 }}
@@ -147,43 +151,43 @@ export default function LoginPage() {
           {/* mobile logo */}
           <div className="flex items-center gap-2 lg:hidden">
             <div className="flex h-10 items-center justify-center overflow-hidden rounded-lg">
-              <img src="/images/logo.png" alt="Logo" className="h-full w-auto" />
+              <Image
+                src="/images/logo.png"
+                alt="Logo"
+                width={1408}
+                height={768}
+                className="h-full w-auto"
+              />
             </div>
             <span className="text-lg font-bold tracking-tight">INOXCRAFT</span>
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">
-              Welcome back
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Sign in to your INOXCRAFT account
-            </p>
+            <h2 className="text-foreground text-2xl font-bold tracking-tight">Welcome back</h2>
+            <p className="text-muted-foreground mt-1 text-sm">Sign in to your INOXCRAFT account</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+          <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="space-y-5" noValidate>
             {/* email */}
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-sm font-medium">
                 Email address
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Mail className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
                   autoComplete="email"
                   className={cn(
-                    "h-10 pl-9 transition-shadow focus:shadow-glow",
-                    errors.email && "border-destructive focus-visible:ring-destructive"
+                    "focus:shadow-glow h-10 pl-9 transition-shadow",
+                    errors.email && "border-destructive focus-visible:ring-destructive",
                   )}
                   {...register("email")}
                 />
               </div>
-              {errors.email && (
-                <p className="text-xs text-destructive">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
             </div>
 
             {/* password */}
@@ -192,34 +196,28 @@ export default function LoginPage() {
                 Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   autoComplete="current-password"
                   className={cn(
-                    "h-10 pl-9 pr-10 transition-shadow focus:shadow-glow",
-                    errors.password && "border-destructive focus-visible:ring-destructive"
+                    "focus:shadow-glow h-10 pr-10 pl-9 transition-shadow",
+                    errors.password && "border-destructive focus-visible:ring-destructive",
                   )}
                   {...register("password")}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((p) => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               {errors.password && (
-                <p className="text-xs text-destructive">
-                  {errors.password.message}
-                </p>
+                <p className="text-destructive text-xs">{errors.password.message}</p>
               )}
             </div>
 
@@ -227,9 +225,9 @@ export default function LoginPage() {
             <Button
               type="submit"
               className={cn(
-                "group h-10 w-full bg-inox-600 text-white shadow-inox",
+                "group bg-inox-600 shadow-inox h-10 w-full text-white",
                 "hover:bg-inox-700 hover:shadow-inox/60",
-                "transition-all duration-200"
+                "transition-all duration-200",
               )}
               disabled={isLoading}
             >

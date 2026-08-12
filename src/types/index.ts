@@ -1,8 +1,7 @@
-import { 
-  type Role as PrismaRole, 
-  type ProjectStatus as PrismaProjectStatus, 
-  type Complexity as PrismaComplexity, 
-  type UnitType as PrismaUnitType 
+import {
+  type ProjectStatus as PrismaProjectStatus,
+  type Complexity as PrismaComplexity,
+  type UnitType as PrismaUnitType,
 } from "@prisma/client";
 
 export type Role = "admin" | "staff"; // Keeping as string literals for frontend convenience if needed, but the types below are better

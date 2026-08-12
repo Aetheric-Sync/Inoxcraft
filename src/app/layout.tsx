@@ -11,8 +11,7 @@ export const metadata: Metadata = {
     default: "INOXCRAFT",
     template: "%s | INOXCRAFT",
   },
-  description:
-    "Professional quotation and project management for stainless steel fabrication",
+  description: "Professional quotation and project management for stainless steel fabrication",
   icons: {
     icon: "/images/favicon.png",
     shortcut: "/images/favicon.png",
@@ -37,8 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             expand
             toastOptions={{
               classNames: {
-                toast:
-                  "font-sans text-sm shadow-card-lg border border-border rounded-xl",
+                toast: "font-sans text-sm shadow-card-lg border border-border rounded-xl",
               },
             }}
           />

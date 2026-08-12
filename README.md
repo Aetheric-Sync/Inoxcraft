@@ -23,22 +23,26 @@
 
 ## 💡 The Pitch
 
-For many fabrication businesses, the "Quotation to Delivery" pipeline is broken—clogged by manual spreadsheets, inconsistent pricing, and fragmented client communication. 
+For many fabrication businesses, the "Quotation to Delivery" pipeline is broken—clogged by manual spreadsheets, inconsistent pricing, and fragmented client communication.
 
 **INOXCRAFT** is a VC-grade SaaS solution that digitizes this entire lifecycle. It provides fabrication shops with a centralized "Source of Truth" for material costs, project tracking, and professional client engagement. It’s not just a tool; it’s the backbone of a professional fabrication operation.
 
 ## 🔄 Core Workflows
 
 ### 1. Material Intelligence
+
 Admins manage a global directory of raw materials (Steel grades, gas, electrodes, etc.) with real-time price-per-unit updates. This ensures every quotation generated is based on current market rates.
 
 ### 2. The Smart Project Intake
-Users capture project requirements through an intuitive, multi-step interface. 
+
+Users capture project requirements through an intuitive, multi-step interface.
+
 - **Dimensions:** Auto-validation of L/W/H.
 - **Complexity Multipliers:** Intelligence that scales labour and time based on project intricacy (Standard vs. Bespoke).
 - **Material Selection:** Real-time lookup of shop materials.
 
 ### 3. Automated Quotation Engine
+
 The system's cost engine logic:
 `Total = ((Material Cost + Labour + Transport) * Complexity Multiplier) * (1 + Profit Margin)`
 This results in instant, professional PDF generation ready for the client's inbox.
@@ -48,19 +52,19 @@ This results in instant, professional PDF generation ready for the client's inbo
 ```mermaid
 graph TD
     User((User/Admin)) --> NextJS[Next.js App Router]
-    
+
     subgraph "Application Layer"
         NextJS --> Pages[Client/Server Pages]
         Pages --> Components[Design System Components]
         Pages --> SActions[Server Actions/API]
     end
-    
+
     subgraph "Logic & Data"
         SActions --> Services[Services: Cost Engine, PDF Gen]
         Services --> Repos[Repositories: Data Access]
         Repos --> Prisma[(Prisma ORM)]
     end
-    
+
     subgraph "External Infrastructure"
         Prisma --> DB[(PostgreSQL - Neon)]
         Services --> Resend[Resend Email API]
@@ -89,12 +93,15 @@ INOXCRAFT features a custom-built design system focused on **Visual Clarity** an
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - PostgreSQL Database (Local or Neon.tech)
 - Redis Instance (Upstash recommended)
 
 ### Installation
+
 1. **Clone & Install:**
+
    ```bash
    git clone https://github.com/your-username/inoxcraft.git
    cd inoxcraft
@@ -103,6 +110,7 @@ INOXCRAFT features a custom-built design system focused on **Visual Clarity** an
 
 2. **Environment Configuration:**
    Create a `.env.local` file based on `.env.example`:
+
    ```env
    DATABASE_URL="postgresql://..."
    NEXTAUTH_SECRET="..."
@@ -112,6 +120,7 @@ INOXCRAFT features a custom-built design system focused on **Visual Clarity** an
    ```
 
 3. **Database Initialization:**
+
    ```bash
    npx prisma migrate dev
    npx prisma db seed

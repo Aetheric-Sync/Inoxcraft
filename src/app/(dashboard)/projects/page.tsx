@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Plus, Eye, FileText } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 
 import { requireSession } from "@/lib/session";
 import { projectRepository } from "@/repositories/project.repository";
@@ -48,7 +48,7 @@ export default async function ProjectsPage({
           <Button
             render={<Link href="/projects/new" />}
             nativeButton={false}
-            className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98]"
+            className="bg-inox-600 shadow-inox hover:bg-inox-700 text-white transition-all duration-200 active:scale-[0.98]"
           >
             <Plus className="mr-2 h-4 w-4" />
             New Project
@@ -66,8 +66,8 @@ export default async function ProjectsPage({
               className={cn(
                 "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition-all duration-200",
                 isActive
-                  ? "bg-inox-600 text-white shadow-inox"
-                  : "border border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  ? "bg-inox-600 shadow-inox text-white"
+                  : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground border",
               )}
             >
               {s}
@@ -85,12 +85,10 @@ export default async function ProjectsPage({
             header: "Project",
             cell: (row) => (
               <div>
-                <p className="font-medium text-foreground transition-colors group-hover:text-inox-600">
+                <p className="text-foreground group-hover:text-inox-600 font-medium transition-colors">
                   {row.projectType}
                 </p>
-                <p className="text-xs text-muted-foreground sm:hidden">
-                  {row.customer.name}
-                </p>
+                <p className="text-muted-foreground text-xs sm:hidden">{row.customer.name}</p>
               </div>
             ),
           },
@@ -98,9 +96,7 @@ export default async function ProjectsPage({
             key: "customer",
             header: "Customer",
             className: "hidden sm:table-cell",
-            cell: (row) => (
-              <span className="text-muted-foreground">{row.customer.name}</span>
-            ),
+            cell: (row) => <span className="text-muted-foreground">{row.customer.name}</span>,
           },
           {
             key: "complexity",
@@ -111,14 +107,12 @@ export default async function ProjectsPage({
                 row.complexity === "standard"
                   ? "bg-blue-400"
                   : row.complexity === "complex"
-                  ? "bg-amber-400"
-                  : "bg-purple-400";
+                    ? "bg-amber-400"
+                    : "bg-purple-400";
               return (
                 <div className="flex items-center gap-1.5">
                   <span className={cn("h-1.5 w-1.5 rounded-full", dotColor)} />
-                  <span className="capitalize text-muted-foreground">
-                    {row.complexity}
-                  </span>
+                  <span className="text-muted-foreground capitalize">{row.complexity}</span>
                 </div>
               );
             },
@@ -128,7 +122,7 @@ export default async function ProjectsPage({
             header: "Total Cost",
             className: "text-right",
             cell: (row) => (
-              <span className="font-semibold text-foreground">
+              <span className="text-foreground font-semibold">
                 {formatNaira(row.totalCostKobo)}
               </span>
             ),
@@ -143,7 +137,7 @@ export default async function ProjectsPage({
             header: "Date",
             className: "hidden lg:table-cell",
             cell: (row) => (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 {new Date(row.createdAt).toLocaleDateString("en-NG", {
                   day: "numeric",
                   month: "short",
@@ -163,7 +157,7 @@ export default async function ProjectsPage({
                   nativeButton={false}
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-muted-foreground transition-colors hover:text-inox-600"
+                  className="text-muted-foreground hover:text-inox-600 h-8 w-8 transition-colors"
                 >
                   <Eye className="h-4 w-4" />
                   <span className="sr-only">View</span>
@@ -175,23 +169,19 @@ export default async function ProjectsPage({
       />
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-border pt-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="border-border flex items-center justify-between border-t pt-4">
+          <p className="text-muted-foreground text-sm">
             Page {page} of {totalPages}
           </p>
           <div className="flex gap-2">
             {page > 1 && (
               <Button
                 render={
-                  <Link
-                    href={`/projects?page=${page - 1}${
-                      status ? `&status=${status}` : ""
-                    }`}
-                  />
+                  <Link href={`/projects?page=${page - 1}${status ? `&status=${status}` : ""}`} />
                 }
                 variant="outline"
                 size="sm"
-                className="transition-colors hover:bg-muted/50"
+                className="hover:bg-muted/50 transition-colors"
               >
                 Previous
               </Button>
@@ -199,15 +189,11 @@ export default async function ProjectsPage({
             {page < totalPages && (
               <Button
                 render={
-                  <Link
-                    href={`/projects?page=${page + 1}${
-                      status ? `&status=${status}` : ""
-                    }`}
-                  />
+                  <Link href={`/projects?page=${page + 1}${status ? `&status=${status}` : ""}`} />
                 }
                 variant="outline"
                 size="sm"
-                className="transition-colors hover:bg-muted/50"
+                className="hover:bg-muted/50 transition-colors"
               >
                 Next
               </Button>

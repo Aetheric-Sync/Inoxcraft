@@ -64,7 +64,7 @@ export const projectRepository = {
         totalCostKobo: data.totalCostKobo,
         notes: data.notes ?? null,
         materials: {
-          create: data.materials.map((m: any) => ({
+          create: data.materials.map((m) => ({
             materialId: m.materialId,
             quantity: m.quantity,
             unitCostKobo: m.unitCostKobo,
@@ -76,6 +76,51 @@ export const projectRepository = {
 
   updateStatus: (id: string, status: ProjectStatus) =>
     db.project.update({ where: { id }, data: { status } }),
+
+  update: (
+    id: string,
+    data: {
+      projectType: string;
+      dimensionsMm: { l: number; w: number; h: number };
+      complexity: Complexity;
+      designImageUrl?: string | null | undefined;
+      labourCostKobo: number;
+      transportCostKobo: number;
+      profitMarginPct: number;
+      totalCostKobo: number;
+      notes?: string | null | undefined;
+      materials: Array<{
+        materialId: string;
+        quantity: number;
+        unitCostKobo: number;
+      }>;
+    },
+  ) =>
+    db.$transaction(async (tx) => {
+      await tx.projectMaterial.deleteMany({ where: { projectId: id } });
+      return tx.project.update({
+        where: { id },
+        data: {
+          projectType: data.projectType,
+          dimensionsMm: data.dimensionsMm,
+          complexity: data.complexity,
+          designImageUrl: data.designImageUrl ?? null,
+          labourCostKobo: data.labourCostKobo,
+          transportCostKobo: data.transportCostKobo,
+          profitMarginPct: data.profitMarginPct,
+          totalCostKobo: data.totalCostKobo,
+          notes: data.notes ?? null,
+          materials: {
+            create: data.materials.map((m) => ({
+              materialId: m.materialId,
+              quantity: m.quantity,
+              unitCostKobo: m.unitCostKobo,
+            })),
+          },
+        },
+        include: { materials: true, customer: true },
+      });
+    }),
 
   softDelete: (id: string) => db.project.update({ where: { id }, data: { deletedAt: new Date() } }),
 

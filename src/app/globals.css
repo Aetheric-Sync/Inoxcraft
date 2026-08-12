@@ -4,29 +4,29 @@
 @layer base {
   :root {
     /* ── Brand ────────────────────────────────── */
-    --inox-50:  246 250 248;
+    --inox-50: 246 250 248;
     --inox-100: 209 237 225;
     --inox-200: 161 214 196;
     --inox-300: 104 186 161;
-    --inox-400:  52 160 126;
-    --inox-500:  26 122  90;
-    --inox-600:  21 102  72;
-    --inox-700:  15  79  56;
-    --inox-800:  10  56  40;
-    --inox-900:   6  33  23;
+    --inox-400: 52 160 126;
+    --inox-500: 26 122 90;
+    --inox-600: 21 102 72;
+    --inox-700: 15 79 56;
+    --inox-800: 10 56 40;
+    --inox-900: 6 33 23;
 
     /* ── Neutral ──────────────────────────────── */
-    --neutral-50:  249 250 251;
+    --neutral-50: 249 250 251;
     --neutral-100: 243 244 246;
     --neutral-200: 229 231 235;
     --neutral-300: 209 213 219;
     --neutral-400: 156 163 175;
     --neutral-500: 107 114 128;
-    --neutral-600:  75  85  99;
-    --neutral-700:  55  65  81;
-    --neutral-800:  31  41  55;
-    --neutral-900:  17  24  39;
-    --neutral-950:   3   7  18;
+    --neutral-600: 75 85 99;
+    --neutral-700: 55 65 81;
+    --neutral-800: 31 41 55;
+    --neutral-900: 17 24 39;
+    --neutral-950: 3 7 18;
 
     /* ── Semantic (light mode) ────────────────── */
     --background: 0 0% 100%;
@@ -51,18 +51,18 @@
     --radius: 0.625rem;
 
     /* ── Status colours ───────────────────────── */
-    --status-draft:     214 84% 56%;
-    --status-quoted:    38 92% 50%;
+    --status-draft: 214 84% 56%;
+    --status-quoted: 38 92% 50%;
     --status-accepted: 142 71% 45%;
-    --status-rejected:   0 84% 60%;
+    --status-rejected: 0 84% 60%;
     --status-completed: 158 65% 28%;
 
     /* ── Sidebar ──────────────────────────────── */
-    --sidebar-bg:      222 47% 9%;
-    --sidebar-hover:   222 39% 14%;
-    --sidebar-active:  158 65% 28%;
-    --sidebar-border:  222 39% 15%;
-    --sidebar-text:    215 20% 65%;
+    --sidebar-bg: 222 47% 9%;
+    --sidebar-hover: 222 39% 14%;
+    --sidebar-active: 158 65% 28%;
+    --sidebar-border: 222 39% 15%;
+    --sidebar-text: 215 20% 65%;
     --sidebar-text-active: 0 0% 100%;
   }
 
@@ -103,7 +103,10 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1,
+      "ss01" 1;
   }
 
   /* ── Custom scrollbar ──────────────────── */
@@ -115,7 +118,7 @@
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-border;
+    @apply bg-border rounded-full;
   }
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground/40;
@@ -123,7 +126,7 @@
 
   /* ── Focus rings ───────────────────────── */
   :focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+    @apply ring-ring ring-offset-background ring-2 ring-offset-2 outline-none;
   }
 
   /* ── Selection ─────────────────────────── */
@@ -136,12 +139,12 @@
 @layer components {
   /* ── Glass card ────────────────────────── */
   .glass {
-    @apply backdrop-blur-sm bg-white/80 dark:bg-neutral-900/80 border border-white/20 dark:border-white/10;
+    @apply border border-white/20 bg-white/80 backdrop-blur-sm dark:border-white/10 dark:bg-neutral-900/80;
   }
 
   /* ── Gradient text ─────────────────────── */
   .gradient-text {
-    @apply bg-gradient-to-r from-inox-600 to-inox-400 bg-clip-text text-transparent;
+    @apply from-inox-600 to-inox-400 bg-gradient-to-r bg-clip-text text-transparent;
   }
 
   /* ── Shimmer animation ─────────────────── */
@@ -176,25 +179,53 @@
 }
 
 @keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position:  200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0);   }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(20px); }
-  to   { opacity: 1; transform: translateX(0);    }
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1);    }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.animate-fade-in       { animation: fade-in       0.4s ease both; }
-.animate-slide-right   { animation: slide-in-right 0.3s ease both; }
-.animate-scale-in      { animation: scale-in      0.25s ease both; }
+.animate-fade-in {
+  animation: fade-in 0.4s ease both;
+}
+.animate-slide-right {
+  animation: slide-in-right 0.3s ease both;
+}
+.animate-scale-in {
+  animation: scale-in 0.25s ease both;
+}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Phone, Mail, ArrowRight, FolderOpen } from "lucide-react";
+import { Phone, Mail, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import { requireSession } from "@/lib/session";
@@ -8,7 +8,6 @@ import { CustomersToolbar } from "@/components/features/customers/customers-tool
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils/cn";
 
 export const metadata: Metadata = { title: "Customers" };
 
@@ -34,22 +33,19 @@ export default async function CustomersPage({
 
   return (
     <div className="animate-fade-in space-y-6">
-      <PageHeader
-        title="Customers"
-        description={`${total} total customers`}
-      />
+      <PageHeader title="Customers" description={`${total} total customers`} />
 
       <CustomersToolbar />
 
       {customers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 py-20 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-3xl shadow-inner-sm">
+        <div className="border-border bg-muted/20 flex flex-col items-center justify-center rounded-xl border border-dashed py-20 text-center">
+          <div className="bg-muted shadow-inner-sm mb-4 flex h-14 w-14 items-center justify-center rounded-2xl text-3xl">
             👥
           </div>
-          <h3 className="text-sm font-semibold text-foreground">
+          <h3 className="text-foreground text-sm font-semibold">
             {search ? `No customers match "${search}"` : "No customers yet"}
           </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-sm">
             Customers will appear here when you create projects for them.
           </p>
         </div>
@@ -67,38 +63,38 @@ export default async function CustomersPage({
               <Link
                 key={customer.id}
                 href={`/customers/${customer.id}`}
-                className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-card p-5 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-md"
+                className="group border-border bg-card shadow-card hover:shadow-card-md relative flex flex-col overflow-hidden rounded-xl border p-5 transition-all duration-300 hover:-translate-y-0.5"
               >
                 <div className="mb-4 flex items-start gap-4">
-                  <Avatar className="h-12 w-12 ring-2 ring-border group-hover:ring-inox-200/60 transition-colors">
-                    <AvatarFallback className="bg-inox-50 text-inox-700 font-semibold dark:bg-inox-900/30 dark:text-inox-300">
+                  <Avatar className="ring-border group-hover:ring-inox-200/60 h-12 w-12 ring-2 transition-colors">
+                    <AvatarFallback className="bg-inox-50 text-inox-700 dark:bg-inox-900/30 dark:text-inox-300 font-semibold">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-semibold text-foreground group-hover:text-inox-600 transition-colors">
+                    <h3 className="text-foreground group-hover:text-inox-600 truncate font-semibold transition-colors">
                       {customer.name}
                     </h3>
                   </div>
                 </div>
 
-                <div className="space-y-2 mt-auto">
+                <div className="mt-auto space-y-2">
                   {customer.phone && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <Phone className="h-4 w-4 flex-shrink-0" />
                       <span className="truncate">{customer.phone}</span>
                     </div>
                   )}
                   {customer.email && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <Mail className="h-4 w-4 flex-shrink-0" />
                       <span className="truncate">{customer.email}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="absolute right-5 top-5">
-                  <ArrowRight className="h-5 w-5 text-muted-foreground opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-inox-600" />
+                <div className="absolute top-5 right-5">
+                  <ArrowRight className="text-muted-foreground group-hover:text-inox-600 h-5 w-5 -translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
                 </div>
               </Link>
             );
@@ -107,23 +103,19 @@ export default async function CustomersPage({
       )}
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-border pt-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="border-border flex items-center justify-between border-t pt-4">
+          <p className="text-muted-foreground text-sm">
             Page {page} of {totalPages}
           </p>
           <div className="flex gap-2">
             {page > 1 && (
               <Button
                 render={
-                  <Link
-                    href={`/customers?page=${page - 1}${
-                      search ? `&search=${search}` : ""
-                    }`}
-                  />
+                  <Link href={`/customers?page=${page - 1}${search ? `&search=${search}` : ""}`} />
                 }
                 variant="outline"
                 size="sm"
-                className="transition-colors hover:bg-muted/50"
+                className="hover:bg-muted/50 transition-colors"
               >
                 Previous
               </Button>
@@ -131,15 +123,11 @@ export default async function CustomersPage({
             {page < totalPages && (
               <Button
                 render={
-                  <Link
-                    href={`/customers?page=${page + 1}${
-                      search ? `&search=${search}` : ""
-                    }`}
-                  />
+                  <Link href={`/customers?page=${page + 1}${search ? `&search=${search}` : ""}`} />
                 }
                 variant="outline"
                 size="sm"
-                className="transition-colors hover:bg-muted/50"
+                className="hover:bg-muted/50 transition-colors"
               >
                 Next
               </Button>

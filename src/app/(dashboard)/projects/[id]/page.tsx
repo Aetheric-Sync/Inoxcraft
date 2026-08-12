@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Phone, Mail, MapPin, Ruler, Package, FileText, ExternalLink } from "lucide-react";
+import { Phone, Mail, MapPin, Ruler, Package, FileText, ExternalLink, Pencil } from "lucide-react";
 
 import { requireSession } from "@/lib/session";
 import { projectRepository } from "@/repositories/project.repository";
@@ -9,13 +9,13 @@ import { ProjectStatusUpdater } from "@/components/features/projects/project-sta
 import { GenerateQuotationButton } from "@/components/features/projects/generate-quotation-button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { DataTable } from "@/components/ui/data-table";
+import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils/money";
-import type { ProjectStatus } from "@/types";
 
 export const metadata: Metadata = { title: "Project Detail" };
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireSession();
+  const session = await requireSession();
   const { id } = await params;
   const project = await projectRepository.findById(id);
   if (!project) notFound();
@@ -23,6 +23,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const dims = project.dimensionsMm as { l: number; w: number; h: number };
   const hasQuotation = project.quotations.length > 0;
   const canGenerate = !hasQuotation || project.status === "accepted";
+  const canEdit =
+    project.status !== "completed" &&
+    (session.user.role === "admin" || project.createdById === session.user.id);
 
   const materialsData = project.materials.map((m) => ({
     id: m.id,
@@ -40,13 +43,13 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       {/* ── LEFT COLUMN (2/3) ─────────────────────────── */}
       <div className="flex-1 space-y-6">
         {/* Project Header Card */}
-        <div className="overflow-hidden rounded-xl border border-border bg-card p-5 shadow-card transition-all duration-300 hover:shadow-card-md">
+        <div className="border-border bg-card shadow-card hover:shadow-card-md overflow-hidden rounded-xl border p-5 transition-all duration-300">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              <h1 className="text-foreground text-3xl font-bold tracking-tight">
                 {project.projectType}
               </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="text-muted-foreground mt-1 text-sm">
                 Created on{" "}
                 {new Date(project.createdAt).toLocaleDateString("en-NG", {
                   day: "numeric",
@@ -56,34 +59,44 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 by {project.createdBy.name}
               </p>
             </div>
-            <div className="flex-shrink-0">
+            <div className="flex flex-shrink-0 items-center gap-3">
               <StatusBadge status={project.status} />
+              {canEdit && (
+                <Button
+                  render={<Link href={`/projects/${project.id}/edit`} />}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                  Edit
+                </Button>
+              )}
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-6 border-t border-border pt-4">
+          <div className="border-border flex flex-wrap gap-6 border-t pt-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <div className="bg-muted text-muted-foreground flex h-8 w-8 items-center justify-center rounded-lg">
                 <Ruler className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
                   Dimensions (mm)
                 </p>
-                <p className="text-sm font-semibold text-foreground">
+                <p className="text-foreground text-sm font-semibold">
                   {dims.l} × {dims.w} × {dims.h}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <div className="bg-muted text-muted-foreground flex h-8 w-8 items-center justify-center rounded-lg">
                 <Package className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
                   Complexity
                 </p>
-                <p className="text-sm font-semibold capitalize text-foreground">
+                <p className="text-foreground text-sm font-semibold capitalize">
                   {project.complexity}
                 </p>
               </div>
@@ -91,20 +104,18 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </div>
 
           {project.notes && (
-            <div className="mt-4 rounded-lg bg-muted/30 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="bg-muted/30 mt-4 rounded-lg p-4">
+              <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Notes
               </p>
-              <p className="mt-1 text-sm text-foreground">{project.notes}</p>
+              <p className="text-foreground mt-1 text-sm">{project.notes}</p>
             </div>
           )}
         </div>
 
         {/* Materials Table Card */}
-        <div className="overflow-hidden rounded-xl border border-border bg-card p-5 shadow-card transition-all duration-300 hover:shadow-card-md">
-          <h2 className="mb-4 text-lg font-semibold tracking-tight text-foreground">
-            Materials
-          </h2>
+        <div className="border-border bg-card shadow-card hover:shadow-card-md overflow-hidden rounded-xl border p-5 transition-all duration-300">
+          <h2 className="text-foreground mb-4 text-lg font-semibold tracking-tight">Materials</h2>
           <DataTable
             data={materialsData}
             columns={[
@@ -116,7 +127,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               {
                 key: "unit",
                 header: "Unit",
-                cell: (row) => <span className="capitalize text-muted-foreground">{row.unit}</span>,
+                cell: (row) => <span className="text-muted-foreground capitalize">{row.unit}</span>,
               },
               {
                 key: "qty",
@@ -138,9 +149,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               },
             ]}
           />
-          <div className="mt-4 flex items-center justify-between rounded-lg bg-muted/40 px-4 py-3">
-            <span className="text-sm font-medium text-muted-foreground">Material Subtotal</span>
-            <span className="font-mono text-base font-semibold text-foreground">
+          <div className="bg-muted/40 mt-4 flex items-center justify-between rounded-lg px-4 py-3">
+            <span className="text-muted-foreground text-sm font-medium">Material Subtotal</span>
+            <span className="text-foreground font-mono text-base font-semibold">
               {formatNaira(materialSubtotal)}
             </span>
           </div>
@@ -148,15 +159,15 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       </div>
 
       {/* ── RIGHT COLUMN (1/3) ────────────────────────── */}
-      <div className="w-full space-y-6 lg:w-80 flex-shrink-0">
+      <div className="w-full flex-shrink-0 space-y-6 lg:w-80">
         {/* Actions Card */}
-        <div className="overflow-hidden rounded-xl border border-border bg-card p-5 shadow-card transition-all duration-300 hover:shadow-card-md">
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="border-border bg-card shadow-card hover:shadow-card-md overflow-hidden rounded-xl border p-5 transition-all duration-300">
+          <h3 className="text-muted-foreground mb-4 text-sm font-semibold tracking-wider uppercase">
             Actions
           </h3>
           <div className="space-y-4">
             <div>
-              <p className="mb-1.5 text-xs font-medium text-muted-foreground">Update Status</p>
+              <p className="text-muted-foreground mb-1.5 text-xs font-medium">Update Status</p>
               <ProjectStatusUpdater projectId={project.id} currentStatus={project.status} />
             </div>
 
@@ -168,21 +179,23 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
             {project.quotations.length > 0 && (
               <div className="pt-2">
-                <p className="mb-2 text-xs font-medium text-muted-foreground">Existing Quotations</p>
+                <p className="text-muted-foreground mb-2 text-xs font-medium">
+                  Existing Quotations
+                </p>
                 <div className="space-y-2">
                   {project.quotations.map((q) => (
                     <Link
                       key={q.id}
                       href={`/quotations/${q.id}`}
-                      className="group flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2 transition-colors hover:bg-muted/50"
+                      className="group border-border bg-background hover:bg-muted/50 flex items-center justify-between rounded-lg border px-3 py-2 transition-colors"
                     >
                       <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-inox-600" />
-                        <span className="font-mono text-sm font-semibold text-foreground group-hover:text-inox-600 transition-colors">
+                        <FileText className="text-inox-600 h-4 w-4" />
+                        <span className="text-foreground group-hover:text-inox-600 font-mono text-sm font-semibold transition-colors">
                           {q.reference}
                         </span>
                       </div>
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 transition-all group-hover:opacity-100" />
+                      <ExternalLink className="text-muted-foreground h-3.5 w-3.5 opacity-0 transition-all group-hover:opacity-100" />
                     </Link>
                   ))}
                 </div>
@@ -192,37 +205,37 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Customer Card */}
-        <div className="overflow-hidden rounded-xl border border-border bg-card p-5 shadow-card transition-all duration-300 hover:shadow-card-md">
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="border-border bg-card shadow-card hover:shadow-card-md overflow-hidden rounded-xl border p-5 transition-all duration-300">
+          <h3 className="text-muted-foreground mb-4 text-sm font-semibold tracking-wider uppercase">
             Customer
           </h3>
           <div className="space-y-3">
-            <p className="text-base font-semibold text-foreground">{project.customer.name}</p>
-            
+            <p className="text-foreground text-base font-semibold">{project.customer.name}</p>
+
             {project.customer.phone && (
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4 text-inox-600" />
+              <div className="text-muted-foreground flex items-center gap-3 text-sm">
+                <Phone className="text-inox-600 h-4 w-4" />
                 <span>{project.customer.phone}</span>
               </div>
             )}
-            
+
             {project.customer.email && (
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4 text-inox-600" />
+              <div className="text-muted-foreground flex items-center gap-3 text-sm">
+                <Mail className="text-inox-600 h-4 w-4" />
                 <span className="truncate">{project.customer.email}</span>
               </div>
             )}
-            
+
             {project.customer.address && (
-              <div className="flex items-start gap-3 text-sm text-muted-foreground">
-                <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-inox-600" />
+              <div className="text-muted-foreground flex items-start gap-3 text-sm">
+                <MapPin className="text-inox-600 mt-0.5 h-4 w-4 flex-shrink-0" />
                 <span>{project.customer.address}</span>
               </div>
             )}
 
             <Link
               href={`/customers/${project.customerId}`}
-              className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-inox-600 transition-colors hover:text-inox-700"
+              className="text-inox-600 hover:text-inox-700 mt-4 inline-flex items-center gap-1 text-xs font-medium transition-colors"
             >
               View customer profile
               <ExternalLink className="h-3 w-3" />
@@ -231,33 +244,33 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Cost Summary Card */}
-        <div className="overflow-hidden rounded-xl border border-border bg-card p-5 shadow-card transition-all duration-300 hover:shadow-card-md">
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="border-border bg-card shadow-card hover:shadow-card-md overflow-hidden rounded-xl border p-5 transition-all duration-300">
+          <h3 className="text-muted-foreground mb-4 text-sm font-semibold tracking-wider uppercase">
             Cost Summary
           </h3>
           <div className="space-y-2.5 text-sm">
-            <div className="flex justify-between text-muted-foreground">
+            <div className="text-muted-foreground flex justify-between">
               <span>Materials (Adj.)</span>
               <span className="font-mono">{formatNaira(materialSubtotal)}</span>
             </div>
-            <div className="flex justify-between text-muted-foreground">
+            <div className="text-muted-foreground flex justify-between">
               <span>Labour</span>
               <span className="font-mono">{formatNaira(project.labourCostKobo)}</span>
             </div>
-            <div className="flex justify-between text-muted-foreground">
+            <div className="text-muted-foreground flex justify-between">
               <span>Transport</span>
               <span className="font-mono">{formatNaira(project.transportCostKobo)}</span>
             </div>
-            <div className="flex justify-between text-muted-foreground">
+            <div className="text-muted-foreground flex justify-between">
               <span>Profit Margin</span>
               <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
                 +{project.profitMarginPct}%
               </span>
             </div>
-            <div className="my-3 h-px bg-border" />
+            <div className="bg-border my-3 h-px" />
             <div className="flex items-center justify-between">
-              <span className="font-medium text-foreground">Total</span>
-              <span className="font-mono text-xl font-bold text-inox-600">
+              <span className="text-foreground font-medium">Total</span>
+              <span className="text-inox-600 font-mono text-xl font-bold">
                 {formatNaira(project.totalCostKobo)}
               </span>
             </div>

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Loader2 } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -77,14 +77,14 @@ export function CustomersToolbar() {
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <form onSubmit={handleSearch} className="flex w-full sm:max-w-[320px] gap-2">
+      <form onSubmit={handleSearch} className="flex w-full gap-2 sm:max-w-[320px]">
         <div className="relative flex-1">
-          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Search customers…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 transition-shadow focus:shadow-glow"
+            className="focus:shadow-glow pl-9 transition-shadow"
           />
         </div>
         <Button type="submit" variant="secondary" className="transition-all duration-200">
@@ -95,7 +95,7 @@ export function CustomersToolbar() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger
           render={
-            <Button className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98]">
+            <Button className="bg-inox-600 shadow-inox hover:bg-inox-700 text-white transition-all duration-200 active:scale-[0.98]">
               <Plus className="mr-2 h-4 w-4" />
               New Customer
             </Button>
@@ -113,12 +113,22 @@ export function CustomersToolbar() {
           >
             <div className="space-y-1.5">
               <Label htmlFor="cust-name">Name *</Label>
-              <Input id="cust-name" {...register("name")} placeholder="Alhaji Musa" className="transition-shadow focus:shadow-glow" />
-              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+              <Input
+                id="cust-name"
+                {...register("name")}
+                placeholder="Alhaji Musa"
+                className="focus:shadow-glow transition-shadow"
+              />
+              {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cust-phone">Phone</Label>
-              <Input id="cust-phone" {...register("phone")} placeholder="+234 800 000 0000" className="transition-shadow focus:shadow-glow" />
+              <Input
+                id="cust-phone"
+                {...register("phone")}
+                placeholder="+234 800 000 0000"
+                className="focus:shadow-glow transition-shadow"
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cust-email">Email</Label>
@@ -127,9 +137,9 @@ export function CustomersToolbar() {
                 type="email"
                 {...register("email")}
                 placeholder="customer@example.com"
-                className="transition-shadow focus:shadow-glow"
+                className="focus:shadow-glow transition-shadow"
               />
-              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+              {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cust-address">Address</Label>
@@ -138,16 +148,16 @@ export function CustomersToolbar() {
                 {...register("address")}
                 rows={2}
                 placeholder="Lagos, Nigeria"
-                className="transition-shadow focus:shadow-glow resize-none"
+                className="focus:shadow-glow resize-none transition-shadow"
               />
             </div>
             <Button
               type="submit"
-              className="bg-inox-600 text-white shadow-inox hover:bg-inox-700 transition-all duration-200 active:scale-[0.98] w-full"
+              className="bg-inox-600 shadow-inox hover:bg-inox-700 w-full text-white transition-all duration-200 active:scale-[0.98]"
               disabled={loading}
             >
               {loading ? (
-                <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               ) : null}
               Create Customer
             </Button>

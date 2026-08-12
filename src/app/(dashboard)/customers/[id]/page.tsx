@@ -42,8 +42,8 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
   if (!customer) notFound();
 
   const totalRevenue = customer.projects
-    .filter((p: any) => p.status === "accepted" || p.status === "completed")
-    .reduce((sum: number, p: any) => sum + p.totalCostKobo, 0);
+    .filter((p) => p.status === "accepted" || p.status === "completed")
+    .reduce((sum, p) => sum + p.totalCostKobo, 0);
 
   return (
     <div className="space-y-6">
@@ -140,7 +140,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                   </TableCell>
                 </TableRow>
               ) : (
-                customer.projects.map((project: any) => (
+                customer.projects.map((project) => (
                   <TableRow key={project.id} className="hover:bg-slate-50/50">
                     <TableCell className="font-medium">{project.projectType}</TableCell>
                     <TableCell>
@@ -161,7 +161,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                         render={<Link href={`/projects/${project.id}`} />}
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-inox-600"
+                        className="text-muted-foreground hover:text-inox-600 h-8 w-8"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>

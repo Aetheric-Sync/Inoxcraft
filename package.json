@@ -3,8 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "prisma generate",
     "dev": "next dev",
+    "prebuild": "prisma generate",
     "build": "prisma generate && prisma migrate deploy && prisma db seed && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint src --max-warnings 0 --report-unused-disable-directives",
     "type-check": "tsc --noEmit",
