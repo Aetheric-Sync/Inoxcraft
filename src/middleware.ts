@@ -6,7 +6,7 @@ import authConfig from "@/lib/auth.config";
 
 const { auth } = NextAuth(authConfig);
 
-const PUBLIC_PATHS = ["/login", "/register", "/api/auth"];
+const PUBLIC_PATHS = ["/login", "/register", "/api/auth", "/api/health"];
 const ADMIN_PATHS = ["/admin"];
 
 export default auth(
