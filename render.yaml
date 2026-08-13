@@ -38,19 +38,3 @@ services:
         value: INOXCRAFT
       - key: SKIP_ENV_VALIDATION
         value: "false"
-
-  # Pings the web service every 10 minutes so Render's free tier never sees
-  # 15 minutes of inactivity and spins the app down.
-  - type: cron
-    name: inoxcraft-keepalive
-    env: node
-    plan: free
-    schedule: "*/10 * * * *"
-    buildCommand: "echo no build needed"
-    startCommand: 'curl -fsS "https://$APP_HOST/api/health"'
-    envVars:
-      - key: APP_HOST
-        fromService:
-          type: web
-          name: inoxcraft
-          property: host
