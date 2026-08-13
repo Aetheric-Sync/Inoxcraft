@@ -2,6 +2,7 @@ import type { NextAuthConfig } from "next-auth";
 import type { Role } from "@prisma/client";
 
 export default {
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
